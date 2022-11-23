@@ -1,0 +1,86 @@
+.cesium-gis-close-button {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 30px;
+  height: 30px;
+  border-radius: 4px;
+}
+
+.cesium-gis-close-button:before,
+.cesium-gis-close-button:after {
+  position: absolute;
+  top: 50%;
+  right: 30%;
+  left: 30%;
+  content: " ";
+  border-color: #cccccc;
+  border-style: solid;
+  border-width: 0 0 2px 0;
+}
+
+.cesium-gis-close-button:before {
+  transform: rotate(45deg);
+}
+
+.cesium-gis-close-button:after {
+  transform: rotate(-45deg);
+}
+
+.cesium-gis-close-button:hover {
+  background-color: #e04343;
+}
+
+.cesium-gis-dialog-frame {
+  border-radius: 5px;
+  transition: width ease-in-out 0.25s;
+  background: rgba(48, 51, 54, 0.8);
+  border: 1px solid #444;
+  color: #edffff;
+  padding: 4px 12px;
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  overflow: hidden;
+}
+
+.cesium-gis-dialog-title {
+  text-align: center;
+  font-size: 11pt;
+}
+
+.cesium-viewer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
+/*navigation mixin*/
+
+$navigation-custom-bottom: 20px;
+$navigation-custom-compass-bottom: 8px;
+$navigation-custom-background-color: rgba(255, 255, 255, 0);
+
+.compass {
+  right: 10px !important;
+  bottom: $navigation-custom-compass-bottom !important;
+  top:  auto !important;
+  background-color: $navigation-custom-background-color !important;
+}
+
+.navigation-controls {
+  right: 105px !important; // 95 + 10
+  top: auto !important;
+  bottom: $navigation-custom-bottom !important;
+  background-color: $navigation-custom-background-color !important;
+}
+
+.distance-legend {
+  right: 135px !important;
+  bottom: $navigation-custom-bottom !important;
+  background-color: $navigation-custom-background-color !important;
+  border-radius: 0 !important;
+}

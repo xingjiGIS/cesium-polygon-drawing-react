@@ -1,0 +1,77 @@
+{
+  "env": {
+    "browser": true
+  },
+  "extends": ["airbnb", "plugin:jsx-a11y/recommended", "prettier"],
+  "plugins": ["jsx-a11y", "prettier", "react-hooks", "@typescript-eslint/eslint-plugin", "import"],
+  "rules": {
+    "import/no-unresolved": "error",
+    "complexity": ["error", { "max": 25 }],
+    "func-names": ["error", "never"],
+    "import/prefer-default-export": "off",
+
+    // disallow the use of console
+    "no-console": ["error", { "allow": ["assert", "info", "warn", "error"] }],
+
+    // Disallow Reassignment of Function Parameters
+    "no-param-reassign": ["error", { "props": false }],
+
+    // disallow dangling underscores in identifiers (no-underscore-dangle)
+    "no-underscore-dangle": "off",
+    "no-use-before-define": "off",
+    "@typescript-eslint/no-use-before-define": ["error"],
+    "no-unused-vars": "off",
+    "@typescript-eslint/no-unused-vars": ["error"],
+    "no-plusplus": "off",
+    "object-shorthand": ["error", "consistent"],
+    "prefer-destructuring": ["error", { "object": false, "array": false }],
+    "prettier/prettier": [
+      "error",
+      {
+        "endOfLine": "auto",
+        "useTabs": false
+      }
+    ],
+    "react/jsx-filename-extension": [1, { "extensions": [".js", ".jsx", ".ts", ".tsx"] }],
+    "react/function-component-definition": [
+      2,
+      {
+        "namedComponents": "arrow-function",
+        "unnamedComponents": "arrow-function"
+      }
+    ],
+    "jsx-a11y/label-has-associated-control": [
+      2,
+      {
+        "labelComponents": ["Label"],
+        "labelAttributes": ["label"],
+        "controlComponents": ["Input"],
+        "depth": 3
+      }
+    ],
+    "import/extensions": [
+      "error",
+      "ignorePackages",
+      {
+        "js": "never",
+        "jsx": "never",
+        "ts": "never",
+        "tsx": "never"
+      }
+    ],
+    "lines-between-class-members": ["error", "always", { "exceptAfterSingleLine": true }],
+    "no-shadow": "off",
+    "@typescript-eslint/no-shadow": ["error"]
+  },
+  "parser": "@typescript-eslint/parser",
+  "settings": {
+    "import/resolver": {
+      "node": {
+        "extensions": [".js", ".jsx", ".ts", ".tsx"]
+      },
+      "typescript": {
+        "alwaysTryTypes": true // always try to resolve types under `<root>@types` directory even it doesn't contain any source code, like `@types/unist`
+      } // this loads <rootdir>/tsconfig.json to eslint
+    }
+  }
+}

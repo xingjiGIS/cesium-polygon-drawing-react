@@ -1,0 +1,85 @@
+{
+  "name": "gis-app",
+  "version": "0.2.2",
+  "private": true,
+  "dependencies": {
+    "@baristalabs/craco-raw-loader": "^1.2.0",
+    "@craco/craco": "^7.0.0",
+    "@testing-library/jest-dom": "^5.14.1",
+    "@testing-library/react": "^13.0.0",
+    "@testing-library/user-event": "^13.2.1",
+    "@turf/turf": "^6.5.0",
+    "@types/jest": "^27.0.1",
+    "@types/mapbox-gl": "^2.7.8",
+    "@types/node": "^16.7.13",
+    "@types/react": "^18.0.0",
+    "@types/react-dom": "^18.0.0",
+    "@types/shpjs": "^3.4.2",
+    "@types/string-similarity": "^4.0.0",
+    "@types/styled-components": "^5.1.26",
+    "@typescript-eslint/eslint-plugin": "^5.43.0",
+    "@typescript-eslint/parser": "^5.43.0",
+    "cesium": "^1.99.0",
+    "craco-cesium": "^1.2.0",
+    "eslint-config-airbnb-typescript": "^17.0.0",
+    "eslint-config-prettier": "^8.5.0",
+    "eslint-import-resolver-typescript": "^3.5.2",
+    "eslint-plugin-import": "^2.25.3",
+    "eslint-plugin-jest": "^27.1.5",
+    "eslint-plugin-prettier": "^4.2.1",
+    "eslint-plugin-react-hooks": "^4.3.0",
+    "glsl-strip-comments": "^1.0.0",
+    "gulp": "^4.0.2",
+    "keycode-js": "^3.1.0",
+    "loglevel": "^1.8.1",
+    "ol": "^7.1.1-dev.1668701704879",
+    "prettier": "^2.7.1",
+    "react": "17.0.1",
+    "react-app-error-boundary": "^1.0.2",
+    "react-custom-events": "^1.1.1",
+    "react-dom": "17.0.1",
+    "react-flow-renderer": "^10.3.17",
+    "react-loader-spinner": "^5.3.4",
+    "react-redux": "^8.0.5",
+    "react-scripts": "5.0.1",
+    "react-toast-notifications": "^2.5.1",
+    "shpjs": "^4.0.4",
+    "string-similarity": "^4.0.4",
+    "styled-components": "^5.3.6",
+    "typescript": "^4.4.2",
+    "web-vitals": "^2.1.0"
+  },
+  "scripts": {
+    "build-shaders": "gulp build",
+    "start": "craco start",
+    "build": "craco --max_old_space_size=4096 build",
+    "test": "craco test",
+    "eject": "react-scripts eject",
+    "lint": "eslint ./src/**/*.js",
+    "lint-fix": "eslint ./src/**/*.js --fix"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "devDependencies": {
+    "eslint": "^8.2.0",
+    "eslint-config-airbnb": "19.0.4",
+    "eslint-plugin-jsx-a11y": "^6.5.1",
+    "eslint-plugin-react": "^7.28.0"
+  }
+}
