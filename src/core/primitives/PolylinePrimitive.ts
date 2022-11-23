@@ -279,34 +279,60 @@ export class PolylinePrimitive {
     minHeight: number;
     segIdx: number;
     basePos: Cartesian3;
+    minDist: number;
+    vertexIdx: number;
+    vertexPos: Cartesian3;
   } {
     const length = this._positions.length;
+    // min distance from line segment
     let minHeight = Number.POSITIVE_INFINITY;
     let segIdx = -1;
+    // min distance from vertex
+    let minDist = Number.POSITIVE_INFINITY;
+    let vertexIdx = -1;
+    let vertexPos = Cartesian3.ZERO;
+
     const basePos = new Cartesian3();
 
     for (let i = 0; i < length; i++) {
       const segStartPos = this._positions[i];
       const segEndPos = this._positions[(i + 1) % length];
-      const a = Cartesian3.distance(segStartPos, segEndPos);
+      const segMidPos = new Cartesian3(
+        (segStartPos.x + segEndPos.x) / 2,
+        (segStartPos.y + segEndPos.y) / 2,
+        (segStartPos.z + segEndPos.z) / 2
+      );
+
+      const radius0 = Cartesian3.distance(segMidPos, segStartPos);
+      const radius1 = Cartesian3.distance(segMidPos, pos);
       const b = Cartesian3.distance(segStartPos, pos);
-      const c = Cartesian3.distance(segEndPos, pos);
-      const s = (a + b + c) / 2;
-      // Heron's formula
-      const area = Math.sqrt(s * (s - a) * (s - b) * (s - c));
-      const height = area / a;
 
-      if (minHeight > height) {
-        minHeight = height;
-        segIdx = i;
+      if (minDist > b) {
+        minDist = b;
+        vertexIdx = i;
+        vertexPos = segStartPos;
+      }
 
-        const dbase = Math.sqrt(b * b - minHeight * minHeight) / a;
-        const delta = new Cartesian3();
-        Cartesian3.subtract(segEndPos, segStartPos, delta);
-        Cartesian3.multiplyByScalar(delta, dbase, delta);
-        Cartesian3.add(segStartPos, delta, basePos);
+      if (radius1 <= radius0) {
+        const a = Cartesian3.distance(segStartPos, segEndPos);
+        const c = Cartesian3.distance(segEndPos, pos);
+        const s = (a + b + c) / 2;
+        // Heron's formula
+        const area = Math.sqrt(s * (s - a) * (s - b) * (s - c));
+        const height = area / a;
+
+        if (minHeight > height) {
+          minHeight = height;
+          segIdx = i;
+
+          const dbase = Math.sqrt(b * b - minHeight * minHeight) / a;
+          const delta = new Cartesian3();
+          Cartesian3.subtract(segEndPos, segStartPos, delta);
+          Cartesian3.multiplyByScalar(delta, dbase, delta);
+          Cartesian3.add(segStartPos, delta, basePos);
+        }
       }
     }
-    return { minHeight, segIdx, basePos };
+    return { minHeight, segIdx, basePos, minDist, vertexIdx, vertexPos };
   }
 }

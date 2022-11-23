@@ -184,7 +184,7 @@ export class Polygon {
     this._id = options.id;
     this._name = defaultValue(options.name, '');
     this._show = defaultValue(options.show, true);
-    this._showVertices = true;
+    this._showVertices = false;
 
     this._boundingSphere = new BoundingSphere();
     BoundingSphere.fromPoints(this._positions, this._boundingSphere);
@@ -310,6 +310,9 @@ export class Polygon {
       } else if (defined(this._subVertexPointPrimitives)) {
         this._subVertexPointCollection!.show = false;
       }
+    } else {
+      this._mainVertexPointCollection!.show = false;
+      this._subVertexPointCollection!.show = false;
     }
   }
 
@@ -579,6 +582,27 @@ export class Polygon {
 
     this._polylinePrimitive.positions = positions;
     this._polygonPrimitive.positions = positions;
+  }
+
+  /**
+   * Delete Main Vertex
+   */
+  deletePoint(idx: number) {
+    if (!this._mainVertexPointCollection) {
+      return;
+    }
+
+    if (idx > this._positions.length - 1 || idx < 0) {
+      return;
+    }
+
+    this._positions.splice(idx, 1);
+
+    const selectedPoint = this._mainVertexPointCollection.get(idx);
+    this._mainVertexPointCollection.remove(selectedPoint);
+
+    this._polygonPrimitive.positions = this._positions;
+    this._polylinePrimitive.positions = this._positions;
   }
 
   /**
