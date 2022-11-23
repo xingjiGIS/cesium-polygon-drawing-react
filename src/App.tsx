@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import './App.css';
 import { Aarav } from './core/Aarav';
 import AaravContext from './AaravContext';
@@ -10,16 +10,15 @@ interface AppProps {
 
 const App = ({ aarav }: AppProps) => {
   let aaravMapViewer = aarav.mainViewer.aaravMapViewer;
-
+  const aaravMainViewer = aarav.mainViewer;
   if (!aaravMapViewer) {
     aaravMapViewer = aarav.mainViewer.createAaravMapViewer();
   }
 
-  const contextValue = {
-    aaravMapViewer,
-    aaravMainViewer: aarav.mainViewer,
-  };
-
+  const contextValue = useMemo(
+    () => ({ aaravMapViewer, aaravMainViewer }),
+    [aaravMapViewer, aaravMainViewer]
+  );
   return (
     <AaravContext.Provider value={contextValue}>
       <GUI />

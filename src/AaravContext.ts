@@ -3,7 +3,7 @@ import { AaravMapViewer } from './core/AaravMapViewer';
 import { AaravViewer } from './core/AaravViewer';
 
 export type AaravContextType = {
-  aaravMapViewer: AaravMapViewer;
+  aaravMapViewer: AaravMapViewer | undefined;
   aaravMainViewer: AaravViewer;
 };
 

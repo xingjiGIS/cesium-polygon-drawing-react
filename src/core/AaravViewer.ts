@@ -2,18 +2,18 @@ import { defined, DeveloperError, Event } from 'cesium';
 import { AaravMapViewer } from './AaravMapViewer';
 import { Aarav } from './Aarav';
 /**
- * Create a Cesium viewer for aarav 
+ * Create a Cesium viewer for aarav
  * And attach it to a HTML element
- * 
+ *
  * Cesium Events evtMapViewerCreated, evtMapViewerDestroyed will be assigned later.
- * 
+ *
  */
 class AaravViewer {
   readonly aarav: Aarav;
   mapContainer: HTMLElement | undefined;
   aaravMapViewer: AaravMapViewer | undefined;
   destroyingAaravMapViewer: boolean = false;
-  
+
   // Cesium Event to process something when create mapviewer
   readonly evtMapViewerCreated = new Event();
   // Cesium Event to process something when destroy mapviewer
@@ -62,7 +62,7 @@ class AaravViewer {
     this.mapContainer.append(this.aaravMapViewer!.viewer.container);
   }
 
-  // remove mapContainer 
+  // remove mapContainer
   detach() {
     if (!this.mapContainer) {
       return;

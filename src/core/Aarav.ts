@@ -14,7 +14,7 @@ import { AaravViewer } from './AaravViewer';
 class Aarav {
   /**
    * HTML root element Id : <div id="root"></div> to add cesium viewer as a child element
-  */
+   */
   readonly rootElementId = 'root';
 
   readonly mainViewer = new AaravViewer(this);

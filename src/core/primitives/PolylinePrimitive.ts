@@ -50,7 +50,7 @@ interface PolylinePrimitiveOptions {
  * _dashed: line style - solid or dash
  * _loop: closed line string or not
  * _depthTest: disable the depth test to camera or not
- * 
+ *
  * Reference: https://cesium.com/learn/cesiumjs/ref-doc/GroundPrimitive.html?classFilter=ground
  */
 export class PolylinePrimitive {
@@ -275,34 +275,38 @@ export class PolylinePrimitive {
     this._update = true;
   }
 
-  distanceFromPosition(pos: Cartesian3): {minHeight: number, segIdx: number, basePos: Cartesian3} {
+  distanceFromPosition(pos: Cartesian3): {
+    minHeight: number;
+    segIdx: number;
+    basePos: Cartesian3;
+  } {
     const length = this._positions.length;
     let minHeight = Number.POSITIVE_INFINITY;
     let segIdx = -1;
-    let basePos = new Cartesian3();
+    const basePos = new Cartesian3();
 
-    for(let i = 0 ; i < length ; i ++){
+    for (let i = 0; i < length; i++) {
       const segStartPos = this._positions[i];
-      const segEndPos = this._positions[(i+1)%length];
+      const segEndPos = this._positions[(i + 1) % length];
       const a = Cartesian3.distance(segStartPos, segEndPos);
       const b = Cartesian3.distance(segStartPos, pos);
       const c = Cartesian3.distance(segEndPos, pos);
-      const s = (a + b + c) / 2
+      const s = (a + b + c) / 2;
       // Heron's formula
       const area = Math.sqrt(s * (s - a) * (s - b) * (s - c));
       const height = area / a;
-      
-      if(minHeight > height) {
+
+      if (minHeight > height) {
         minHeight = height;
         segIdx = i;
 
-        let dbase = Math.sqrt(b*b - minHeight*minHeight)/a;
-        let delta = new Cartesian3();
+        const dbase = Math.sqrt(b * b - minHeight * minHeight) / a;
+        const delta = new Cartesian3();
         Cartesian3.subtract(segEndPos, segStartPos, delta);
         Cartesian3.multiplyByScalar(delta, dbase, delta);
         Cartesian3.add(segStartPos, delta, basePos);
       }
     }
-    return {minHeight, segIdx, basePos};
+    return { minHeight, segIdx, basePos };
   }
 }

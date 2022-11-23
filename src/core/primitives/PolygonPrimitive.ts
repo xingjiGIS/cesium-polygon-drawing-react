@@ -37,7 +37,7 @@ interface PolygonPrimitiveOptions {
  * _update: update polygon or not (positions or options)
  * _allowPicking: When true, each geometry instance will only be pickable with Scene#pick. When false, GPU memory is saved.
  * _clamped: clamp on the terrain or not
- * 
+ *
  * Reference: https://cesium.com/learn/cesiumjs/ref-doc/GroundPrimitive.html?classFilter=ground
  */
 export class PolygonPrimitive {
