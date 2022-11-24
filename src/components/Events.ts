@@ -3,9 +3,9 @@
  */
 import { Cartesian3 } from 'cesium';
 import logger from 'loglevel';
-import DrawingMode from './DrawingMode';
-import { Polygon, Vertex } from './Polygon';
-import { PolygonDrawing } from './PolygonDrawing';
+import DrawingMode from '../core/tools/drawing/DrawingMode';
+import { Polygon, Vertex } from '../core/tools/drawing/Polygon';
+import { PolygonDrawing } from '../core/tools/drawing/PolygonDrawing';
 
 export const onVertexCreatedWhileDrawing = (
   vertex: Cartesian3[],

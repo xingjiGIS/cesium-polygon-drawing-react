@@ -517,6 +517,33 @@ export class Polygon {
     return pointPrimitive;
   }
 
+  insertVertex(position: Cartesian3, segStartIdx: number) {
+    console.info('Vertex inserted');
+
+    const polylinePrimitive = this._polylinePrimitive;
+    const polygonPrimitive = this._polygonPrimitive;
+
+    for (let i = 0; i < this._mainVertexPointPrimitives!.length; i++) {
+      if (this._mainVertexPointPrimitives![i].vertexIndex > segStartIdx) {
+        this._mainVertexPointPrimitives![i].vertexIndex += 1;
+      }
+    }
+
+    const newPos = new Cartesian3();
+
+    position.clone(newPos);
+    this._positions.splice(segStartIdx + 1, 0, newPos);
+
+    const pointPrimitive = this._newMainVertexPointPrimitive(
+      segStartIdx + 1,
+      position,
+      polygonPrimitive,
+      polylinePrimitive
+    );
+
+    return pointPrimitive;
+  }
+
   updateMainVertex(focusedPointPrimitive: PointPrimitive, position: Cartesian3) {
     // @ts-ignore
     const vertexIndex = focusedPointPrimitive.vertexIndex;

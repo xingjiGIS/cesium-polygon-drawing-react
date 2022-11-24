@@ -24,6 +24,15 @@ import {
   Primitive
 } from 'cesium';
 
+export interface NearestSegmentInfo {
+  minHeight: number;
+  segIdx: number;
+  basePos: Cartesian3;
+  minDist: number;
+  vertexIdx: number;
+  vertexPos: Cartesian3;
+}
+
 interface PolylinePrimitiveOptions {
   id?: string;
   color?: Color;
@@ -275,14 +284,12 @@ export class PolylinePrimitive {
     this._update = true;
   }
 
-  distanceFromPosition(pos: Cartesian3): {
-    minHeight: number;
-    segIdx: number;
-    basePos: Cartesian3;
-    minDist: number;
-    vertexIdx: number;
-    vertexPos: Cartesian3;
-  } {
+  /**
+   * Get the nearest segment and vertex from the position
+   * @param {Cartesian3} pos
+   * @returns {NearestSegmentInfo}
+   */
+  getNearestSegmentInfo(pos: Cartesian3): NearestSegmentInfo {
     const length = this._positions.length;
     // min distance from line segment
     let minHeight = Number.POSITIVE_INFINITY;
