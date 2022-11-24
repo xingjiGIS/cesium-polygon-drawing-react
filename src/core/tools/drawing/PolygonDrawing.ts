@@ -258,9 +258,9 @@ class PolygonDrawing extends MapTool {
       );
       this._polygon.update(cullingVolume);
     } else if (event.button === MouseButton.RightButton && this._mode === DrawingMode.EditDraw) {
-      if (this._focusedPointPrimitive) {
+      if (this._snapVertex) {
         // Delete vertex
-        this.deleteVertex(this._focusedPointPrimitive);
+        this.deleteVertex(this._snapVertex);
         // if number of vertex < 3, remove and reset polygon
         if (this._polygon.positions.length < 3) {
           this.deletePolygon();

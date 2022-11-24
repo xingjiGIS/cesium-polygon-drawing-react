@@ -1,18 +1,8 @@
-import {
-  // @ts-ignore
-  createDefaultImageryProviderViewModels,
-  defined,
-  DeveloperError,
-  // @ts-ignore
-  VERSION,
-  Viewer
-} from 'cesium';
-import logger from 'loglevel';
+import { defined, DeveloperError, Viewer } from 'cesium';
 
 import { DrawingToolsMixin } from './tools/drawing';
 
 class AaravMapViewer {
-  private readonly _baseImageryProviders: any;
   private _viewer: Viewer;
 
   constructor(container: HTMLElement) {
@@ -20,13 +10,8 @@ class AaravMapViewer {
       throw new DeveloperError('container is required.');
     }
 
-    if (VERSION !== '1.99') {
-      logger.warn('subsurface rendering engine may not work at this cesium js version');
-    }
-
+    const viewer: Viewer = new Viewer(container);
     // @ts-ignore
-    this._baseImageryProviders = createDefaultImageryProviderViewModels();
-    const viewer: any = new Viewer(container);
     viewer._element.style = 'width: 100vw;';
 
     this._viewer = viewer;

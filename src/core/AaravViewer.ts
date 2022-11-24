@@ -89,24 +89,6 @@ class AaravViewer {
     this.aaravMapViewer = undefined;
     this.destroyingAaravMapViewer = false;
   }
-
-  // change mouse cursor style
-  setOverrideCursorWait() {
-    document.body.style.cursor = 'wait';
-
-    if (this.aaravMapViewer) {
-      this.aaravMapViewer.viewer.canvas.style.cursor = 'wait';
-    }
-  }
-
-  // restore mouse cursor to pointer
-  restoreOverrideCursor() {
-    document.body.style.cursor = 'default';
-
-    if (this.aaravMapViewer) {
-      this.aaravMapViewer.viewer.canvas.style.cursor = 'default';
-    }
-  }
 }
 
 export { AaravViewer };

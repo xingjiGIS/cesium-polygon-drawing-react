@@ -12,11 +12,9 @@ import {
   Scene
 } from 'cesium';
 import logger from 'loglevel';
-import VisibilityState from './VisibilityState';
 
 const cartesianScratch = new Cartesian3();
 const rayScratch = new Ray();
-const visibilityState = new VisibilityState();
 
 /**
  * Computes the world position on either the terrain or tileset from a mouse position.
@@ -40,13 +38,8 @@ export function getWorldPosition(
 
   let position;
   if (scene.pickPositionSupported) {
-    // Hide every primitive that isn't a tileset
-    visibilityState.hide(scene);
-
     // Don't pick default 3x3, or scene.pick may allow a mousePosition that isn't on the tileset to pickPosition.
     const pickedObject = scene.pick(mousePosition, 1, 1);
-
-    visibilityState.restore(scene);
 
     if (
       defined(pickedObject) &&

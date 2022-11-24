@@ -21,7 +21,6 @@ import {
 
 import logger from 'loglevel';
 import { PolygonPrimitive, PolylinePrimitive } from '../../primitives';
-import { getHeight } from '../../util';
 import { PointOptions } from './DrawingSettings';
 
 const HIGHLIGHTED_POINT_PRIMITIVE_COLOR = Color.RED;
@@ -45,7 +44,7 @@ function _updateHeightOfPointPrimitives(scene: Scene, pointPrimitives: PointPrim
 
     scratchCarto.height = 0;
 
-    const height = getHeight(scene, scratchCarto);
+    const height = scene.globe.getHeight(scratchCarto);
 
     Cartesian3.fromRadians(
       scratchCarto.longitude,
@@ -348,7 +347,7 @@ export class Polygon {
 
       scratchCarto.height = 0;
 
-      const height = getHeight(scene, scratchCarto);
+      const height = scene.globe.getHeight(scratchCarto);
 
       if (!defined(height)) logger.warn('invalid height');
 
