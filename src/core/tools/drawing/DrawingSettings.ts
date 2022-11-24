@@ -127,7 +127,7 @@ class DrawingSettings {
   // return point options
   public static getPointOptions = function () {
     return {
-      pixelSize: 1,
+      pixelSize: 7,
       color: DrawingSettings.color,
       position: new Cartesian3(),
       disableDepthTestDistance: Number.POSITIVE_INFINITY, // for draw-over

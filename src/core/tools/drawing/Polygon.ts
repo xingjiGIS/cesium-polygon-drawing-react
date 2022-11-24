@@ -172,7 +172,7 @@ export class Polygon {
     this._id = options.id;
     this._name = defaultValue(options.name, '');
     this._show = defaultValue(options.show, true);
-    this._showVertices = false;
+    this._showVertices = true;
 
     this._boundingSphere = new BoundingSphere();
     BoundingSphere.fromPoints(this._positions, this._boundingSphere);
@@ -484,6 +484,24 @@ export class Polygon {
 
     polylinePrimitive.updatePosition(vertexIndex, position);
     polygonPrimitive.updatePosition(vertexIndex, position);
+
+    const mainVertexPointPrimitive = this.findMainVertex(vertexIndex);
+    if (mainVertexPointPrimitive) {
+      mainVertexPointPrimitive.position = position;
+    }
+  }
+
+  findMainVertex(vertexIndex: number) {
+    let mainVertexPointPrimitive;
+    if (this._mainVertexPointCollection) {
+      for (let i = 0; i < this._mainVertexPointCollection!.length; i++) {
+        // @ts-ignore
+        if (this._mainVertexPointCollection.get(i).vertexIndex === vertexIndex) {
+          mainVertexPointPrimitive = this._mainVertexPointCollection.get(i);
+        }
+      }
+    }
+    return mainVertexPointPrimitive;
   }
 
   /**
@@ -514,29 +532,6 @@ export class Polygon {
   }
 
   /**
-   * Delete Last point from the polygon
-   * @returns
-   */
-  deleteLastPoint() {
-    if (!this._mainVertexPointCollection) {
-      return;
-    }
-
-    const positions = this._positions;
-    positions.pop();
-    this._positions = positions;
-
-    const length = this._mainVertexPointCollection.length;
-    if (length > 0) {
-      const lastPoint = this._mainVertexPointCollection.get(length - 1);
-      this._mainVertexPointCollection.remove(lastPoint);
-    }
-
-    this._polylinePrimitive.positions = positions;
-    this._polygonPrimitive.positions = positions;
-  }
-
-  /**
    * Delete Main Vertex
    */
   deletePoint(idx: number) {
@@ -550,8 +545,15 @@ export class Polygon {
 
     this._positions.splice(idx, 1);
 
-    const selectedPoint = this._mainVertexPointCollection.get(idx);
-    this._mainVertexPointCollection.remove(selectedPoint);
+    const selectedMainVertexPrimitive = this.findMainVertex(idx);
+    if (selectedMainVertexPrimitive)
+      this._mainVertexPointCollection.remove(selectedMainVertexPrimitive);
+
+    for (let i = 0; i < this._mainVertexPointPrimitives!.length; i++) {
+      if (this._mainVertexPointPrimitives![i].vertexIndex > idx) {
+        this._mainVertexPointPrimitives![i].vertexIndex -= 1;
+      }
+    }
 
     this._polygonPrimitive.positions = this._positions;
     this._polylinePrimitive.positions = this._positions;

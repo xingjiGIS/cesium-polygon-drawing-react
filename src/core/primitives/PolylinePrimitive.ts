@@ -315,6 +315,8 @@ export class PolylinePrimitive {
 
       const radius0 = Cartesian3.distance(segMidPos, segStartPos);
       const radius1 = Cartesian3.distance(segMidPos, pos);
+      const a = Cartesian3.distance(segStartPos, segEndPos);
+      const c = Cartesian3.distance(segEndPos, pos);
       const b = Cartesian3.distance(segStartPos, pos);
 
       if (minDist > b) {
@@ -324,8 +326,6 @@ export class PolylinePrimitive {
       }
 
       if (radius1 <= radius0) {
-        const a = Cartesian3.distance(segStartPos, segEndPos);
-        const c = Cartesian3.distance(segEndPos, pos);
         const s = (a + b + c) / 2;
         // Heron's formula
         const area = Math.sqrt(s * (s - a) * (s - b) * (s - c));

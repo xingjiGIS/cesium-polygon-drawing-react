@@ -23,7 +23,6 @@ const cart3Scratch = new Cartesian3();
 // const cart3Scratch1 = new Cartesian3();
 const mouseDelta = 10;
 const ESC_KEY = 'Escape';
-const DELETE_KEY = 'Delete';
 
 const SNAP_PIXELSIZE_TO_VERTEX = 15;
 const SNAP_PIXELSIZE_TO_EDGE = 10;
@@ -298,11 +297,6 @@ class PolygonDrawing extends MapTool {
     if (event.key === ESC_KEY) {
       this.deletePolygon();
     }
-
-    if (event.key === DELETE_KEY) {
-      this._polygon.deleteLastPoint();
-      this._polygon.updateLastPosition(this._tempNextPos);
-    }
   }
 
   /**
@@ -494,7 +488,7 @@ class PolygonDrawing extends MapTool {
       return;
     }
 
-    const distance = polyline.getNearestEdgeInfo(position);
+    const nearestInfo = polyline.getNearestEdgeInfo(position);
 
     const scene = this._scene;
     const drawingBufferWidth = scene.drawingBufferWidth;
@@ -506,17 +500,17 @@ class PolygonDrawing extends MapTool {
       drawingBufferHeight
     );
 
-    const pixelDistFromSeg = distance.minHeight / metersPerPixel;
-    const pixelDistFromVertex = distance.minDist / metersPerPixel;
+    const pixelDistFromSeg = nearestInfo.minHeight / metersPerPixel;
+    const pixelDistFromVertex = nearestInfo.minDist / metersPerPixel;
 
     if (!this._isDrag) {
       this._snapVertex = undefined;
     }
 
     if (pixelDistFromVertex < SNAP_PIXELSIZE_TO_VERTEX) {
-      this._markerPointPrimitive.position = distance.vertexPos;
+      this._markerPointPrimitive.position = nearestInfo.vertexPos;
       this._snapVertex = {
-        vertexIndex: distance.vertexIdx,
+        vertexIndex: nearestInfo.vertexIdx,
         isMainVertex: true,
         polylinePrimitive: this._polygon.polyline,
         polygonPrimitive: this._polygon.polygon
@@ -524,7 +518,7 @@ class PolygonDrawing extends MapTool {
 
       this._snapMode = SnapMode.VERTEX;
     } else if (pixelDistFromSeg < SNAP_PIXELSIZE_TO_EDGE) {
-      this._markerPointPrimitive.position = distance.basePos;
+      this._markerPointPrimitive.position = nearestInfo.basePos;
       this._resetFocusedPointPrimitive();
 
       this._snapMode = SnapMode.EDGE;
@@ -535,7 +529,7 @@ class PolygonDrawing extends MapTool {
 
     // line snapped
     if (this._snapMode === SnapMode.EDGE) {
-      this._focusedSnapPoint = { segStartIdx: distance.segIdx, position: distance.basePos };
+      this._focusedSnapPoint = { segStartIdx: nearestInfo.segIdx, position: nearestInfo.basePos };
     }
 
     // Dragging Vertex
