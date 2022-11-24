@@ -23,18 +23,15 @@ import logger from 'loglevel';
 import { PolygonPrimitive, PolylinePrimitive } from '../../primitives';
 import { PointOptions } from './DrawingSettings';
 
-const HIGHLIGHTED_POINT_PRIMITIVE_COLOR = Color.RED;
-const HIGHLIGHTED_POINT_PRIMITIVE_PIXEL_SIZE_OFFSET = 5;
-
 const SELECTED_POLYGON_PRIMITIVE_COLOR = Color.YELLOW.withAlpha(0.5);
 
 const scratchCarto = new Cartographic();
 const scratchCartesian = new Cartesian3();
+const scratchCartesian1 = new Cartesian3();
 
 const POLYGON_MINIMUM_PIXEL_SIZE = 20;
 const POLYLINE_MINIMUM_PIXEL_SIZE = 100;
 const MAIN_VERTICES_MINIMUM_PIXEL_SIZE = 400;
-const SUB_VERTICES_MINIMUM_PIXEL_SIZE = 500;
 
 function _updateHeightOfPointPrimitives(scene: Scene, pointPrimitives: PointPrimitive[]) {
   const ellipsoid = scene.globe.ellipsoid;
@@ -61,7 +58,6 @@ function _updateHeightOfPointPrimitives(scene: Scene, pointPrimitives: PointPrim
 /**
  * Vertex interface which construct a polygon
  * mainVertexPointPrimitive: Vertex which construct a polygon
- * subVertexPointPrimitive: Vertex lying on middle of one segment of polygon
  * Reference https://cesium.com/learn/cesiumjs/ref-doc/PointPrimitive.html?classFilter=pointpri
  */
 export interface Vertex extends PointPrimitive {
@@ -71,12 +67,11 @@ export interface Vertex extends PointPrimitive {
   polygonPrimitive: PolygonPrimitive;
   polygon: Polygon;
   mainVertexPointPrimitive: Vertex;
-  subVertexPointPrimitive: PointPrimitive;
 }
 
 /**
- * Polygon is constructed from vertex and line segments.
- * PolygonConstructorOptions is options for vertex, segments and polygon itself.
+ * Polygon is constructed from vertex and line edges.
+ * PolygonConstructorOptions is options for vertex, edges and polygon itself.
  */
 export interface PolygonConstructorOptions {
   id: string;
@@ -98,13 +93,12 @@ export interface PolygonConstructorOptions {
 
 /**
  * Polygon represents polygon primitive on the scene
- * _primitives: store all primitives to be rendered for polygon, ex., vertex, polyline(segment).
+ * _primitives: store all primitives to be rendered for polygon, ex., vertex, polyline(edge).
  * _show: show/hide polygon
  * _show_Vertices: show/hide vertex
  * _id: primitive index
  * _name: primitive name
  * _mainVertexPointCollection: store vertex which construct polygon
- * _subVertexPointCollection: store vertex lying on middle point of polyline segment
  */
 export class Polygon {
   private readonly _scene: Scene;
@@ -119,16 +113,13 @@ export class Polygon {
   private _name: string;
 
   private _mainVertexPointCollection: PointPrimitiveCollection | undefined;
-  private _subVertexPointCollection: PointPrimitiveCollection | undefined;
 
   private _mainVertexPointPrimitives: Vertex[] | undefined;
-  private _subVertexPointPrimitives: Vertex[] | undefined;
   private readonly _polygonPrimitive: PolygonPrimitive;
   private readonly _polylinePrimitive: PolylinePrimitive;
 
   private _focusedPointPrimitive: PointPrimitive | undefined;
 
-  private readonly _subVertexPointPrimitivePixelSize: number;
   private readonly _selectedLocale: string | string[] | undefined;
 
   private _boundingSphere: BoundingSphere;
@@ -178,8 +169,6 @@ export class Polygon {
 
     this._selectedLocale = options.locale;
 
-    this._subVertexPointPrimitivePixelSize = this._pointOptions.pixelSize - 3;
-
     this._id = options.id;
     this._name = defaultValue(options.name, '');
     this._show = defaultValue(options.show, true);
@@ -203,14 +192,8 @@ export class Polygon {
         show: options.show
       })
     );
-    this._subVertexPointCollection = primitives.add(
-      new PointPrimitiveCollection({
-        show: options.show
-      })
-    );
 
     this._mainVertexPointPrimitives = [];
-    this._subVertexPointPrimitives = [];
 
     for (let i = 0; i < this._positions.length; i++) {
       this._newMainVertexPointPrimitive(
@@ -278,8 +261,6 @@ export class Polygon {
 
       if (defined(this._mainVertexPointPrimitives)) this._mainVertexPointCollection!.show = false;
 
-      if (defined(this._subVertexPointPrimitives)) this._subVertexPointCollection!.show = false;
-
       return;
     }
 
@@ -293,25 +274,10 @@ export class Polygon {
           );
         }
       } else {
-        if (defined(this._mainVertexPointPrimitives)) {
-          this._mainVertexPointCollection!.show = false;
-          this._subVertexPointCollection!.show = false;
-        }
-
-        return;
-      }
-
-      if (diameterInPixels >= SUB_VERTICES_MINIMUM_PIXEL_SIZE) {
-        if (this._subVertexPointPrimitives) {
-          this._subVertexPointCollection!.show = true;
-          _updateHeightOfPointPrimitives(this._scene, this._subVertexPointPrimitives);
-        }
-      } else if (defined(this._subVertexPointPrimitives)) {
-        this._subVertexPointCollection!.show = false;
+        this._mainVertexPointCollection!.show = false;
       }
     } else {
       this._mainVertexPointCollection!.show = false;
-      this._subVertexPointCollection!.show = false;
     }
   }
 
@@ -323,8 +289,6 @@ export class Polygon {
     this._polylinePrimitive.show = false;
 
     if (defined(this._mainVertexPointPrimitives)) this._mainVertexPointCollection!.show = false;
-
-    if (defined(this._subVertexPointPrimitives)) this._subVertexPointCollection!.show = false;
   }
 
   /**
@@ -448,13 +412,7 @@ export class Polygon {
     if (show) {
       // show property of all point primitives will be updated in update function
     } else {
-      if (defined(this._mainVertexPointCollection)) {
-        this._mainVertexPointCollection!.show = false;
-      }
-
-      if (defined(this._subVertexPointCollection)) {
-        this._subVertexPointCollection!.show = false;
-      }
+      this._mainVertexPointCollection!.show = false;
     }
   }
 
@@ -475,50 +433,18 @@ export class Polygon {
    * @param {PointPrimitive} pointPrimitive
    */
   _setFocusedPointPrimitive(pointPrimitive: PointPrimitive) {
-    this._highlightPointPrimitive(pointPrimitive);
-
     this._focusedPointPrimitive = pointPrimitive;
 
     this._scene.screenSpaceCameraController.enableRotate = false;
   }
 
   /**
-   * Add a new vertex and reconstruct polygon (just for subvertex)
-   * @param {Vertex} focusedSubVertexPointPrimitive
+   * Add a new vertex and reconstruct polygon
+   * @param {Vertex} position
+   * @param {number} segStartIdx
    * @returns {void}
    */
-  insertPoint(focusedSubVertexPointPrimitive: Vertex) {
-    const position = focusedSubVertexPointPrimitive.position;
-
-    const mainVertexPrimitive = focusedSubVertexPointPrimitive.mainVertexPointPrimitive;
-    const vertexIndex = mainVertexPrimitive.vertexIndex;
-
-    const polylinePrimitive = mainVertexPrimitive.polylinePrimitive;
-    const polygonPrimitive = mainVertexPrimitive.polygonPrimitive;
-
-    const newPos = new Cartesian3();
-
-    position.clone(newPos);
-
-    this._positions.splice(vertexIndex + 1, 0, newPos);
-
-    // change vertexIndex property of all main vertex from starting
-    for (let i = vertexIndex + 1; i < this._mainVertexPointPrimitives!.length; i++)
-      this._mainVertexPointPrimitives![i].vertexIndex += 1;
-
-    const pointPrimitive = this._newMainVertexPointPrimitive(
-      vertexIndex + 1,
-      position,
-      polygonPrimitive,
-      polylinePrimitive
-    );
-
-    return pointPrimitive;
-  }
-
   insertVertex(position: Cartesian3, segStartIdx: number) {
-    console.info('Vertex inserted');
-
     const polylinePrimitive = this._polylinePrimitive;
     const polygonPrimitive = this._polygonPrimitive;
 
@@ -556,14 +482,12 @@ export class Polygon {
     // @ts-ignore
     const polygonPrimitive = focusedPointPrimitive.polygonPrimitive;
 
-    // @ts-ignore
     polylinePrimitive.updatePosition(vertexIndex, position);
-    // @ts-ignore
     polygonPrimitive.updatePosition(vertexIndex, position);
   }
 
   /**
-   * Add vertex to polygon
+   * Add vertex to polygon as last vertex
    * @param {Catesian3} position
    */
   addPoint(position: Cartesian3) {
@@ -574,7 +498,7 @@ export class Polygon {
     this._polylinePrimitive.positions = positions;
     this._polygonPrimitive.positions = positions;
 
-    this._newMainVertexPointPrimitive(
+    const pointPrimitive = this._newMainVertexPointPrimitive(
       positions.length - 1,
       position,
       this._polygonPrimitive,
@@ -585,6 +509,8 @@ export class Polygon {
     this._polylinePrimitive.show = true;
 
     BoundingSphere.fromPoints(positions, this._boundingSphere);
+
+    return pointPrimitive;
   }
 
   /**
@@ -658,37 +584,6 @@ export class Polygon {
   }
 
   /**
-   * Clear highlited style on point primitive
-   */
-  _clearHighlightedPointPrimitive() {
-    if (this._mainVertexPointPrimitives)
-      for (let index = 0; index < this._mainVertexPointCollection!.length; index++) {
-        const pointPrimitive = this._mainVertexPointCollection!.get(index);
-
-        pointPrimitive.color = this._pointOptions.color;
-        pointPrimitive.pixelSize = this._pointOptions.pixelSize;
-      }
-
-    if (this._subVertexPointPrimitives)
-      for (let index = 0; index < this._subVertexPointCollection!.length; index++) {
-        const pointPrimitive = this._subVertexPointCollection!.get(index);
-
-        pointPrimitive.color = this._pointOptions.color;
-        pointPrimitive.pixelSize = this._subVertexPointPrimitivePixelSize;
-      }
-  }
-
-  /**
-   * Highlight point primitive, eg., when mouse over
-   * @param {PointPrimitive} pointPrimitive
-   */
-  _highlightPointPrimitive(pointPrimitive: PointPrimitive) {
-    pointPrimitive.color = HIGHLIGHTED_POINT_PRIMITIVE_COLOR;
-    pointPrimitive.pixelSize =
-      this._pointOptions.pixelSize + HIGHLIGHTED_POINT_PRIMITIVE_PIXEL_SIZE_OFFSET;
-  }
-
-  /**
    * @param {number} vertexIndex
    * @param {Cartesian3} position
    * @param {PolygonPrimitive} polygonPrimitive
@@ -706,7 +601,7 @@ export class Polygon {
   ) {
     const pointPrimitive = this._mainVertexPointCollection!.add(this._pointOptions) as Vertex;
 
-    pointPrimitive.position = Cartesian3.clone(position, new Cartesian3());
+    pointPrimitive.position = Cartesian3.clone(position, scratchCartesian1);
     pointPrimitive.show = true;
     pointPrimitive.polygon = this;
     pointPrimitive.polygonPrimitive = polygonPrimitive;
@@ -742,22 +637,15 @@ export class Polygon {
    */
   updateHeightOfPointPrimitives() {
     // preConditionStart
-
     if (!defined(this._mainVertexPointPrimitives)) {
       throw new DeveloperError('_mainVertexPointPrimitives required');
     }
-
-    if (!defined(this._subVertexPointPrimitives)) {
-      throw new DeveloperError('_subVertexPointPrimitives required');
-    }
-
     // PreConditionEnd
 
     _updateHeightOfPointPrimitives(
       this._scene,
       this._mainVertexPointPrimitives as PointPrimitive[]
     );
-    _updateHeightOfPointPrimitives(this._scene, this._subVertexPointPrimitives as PointPrimitive[]);
   }
 
   destroy() {

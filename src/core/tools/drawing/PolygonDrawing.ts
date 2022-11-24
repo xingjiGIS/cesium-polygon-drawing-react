@@ -26,12 +26,13 @@ const ESC_KEY = 'Escape';
 const DELETE_KEY = 'Delete';
 
 const SNAP_PIXELSIZE_TO_VERTEX = 15;
-const SNAP_PIXELSIZE_TO_SEGMENT = 10;
+const SNAP_PIXELSIZE_TO_EDGE = 10;
+const MIN_POLYGON_VERTEX_NUM = 3;
 
 const enum SnapMode {
   NONE = -1,
   VERTEX = 0,
-  SEGMENT = 1
+  EDGE = 1
 }
 
 /**
@@ -84,13 +85,15 @@ class PolygonDrawing extends MapTool {
   private readonly _markerPointPrimitive: PointPrimitive;
   private readonly _markerPointCollection: PointPrimitiveCollection;
 
+  // Is snapped to the first vertex
+  private _isSnappedToFristVertex: boolean;
   // Is dragging
   private _isDrag: boolean;
-  // -1: no snapped, 0: snapped on vertex, 1: snapped on segment
+  // -1: no snapped, 0: snapped on vertex, 1: snapped on edge
   private _snapMode: SnapMode;
-  // snapped point on line segment
-  private _tempSnapPoint: SnapPointOptions | undefined;
-  // vertex added on line segment from the snapped point
+  // snapped point on line edge
+  private _focusedSnapPoint: SnapPointOptions | undefined;
+  // vertex added on line edge from the snapped point
   private _snapVertex: Vertex | undefined;
 
   constructor(options: PolygonDrawingConstructorOptions) {
@@ -118,6 +121,7 @@ class PolygonDrawing extends MapTool {
     this._markerPointPrimitive = this._markerPointCollection.add(this.options.markerOptions);
 
     this._isDrag = false;
+    this._isSnappedToFristVertex = false;
     this._snapMode = SnapMode.NONE;
   }
 
@@ -149,6 +153,7 @@ class PolygonDrawing extends MapTool {
     super.activate();
 
     this._reset();
+    this._resetAll();
 
     return true;
   }
@@ -215,15 +220,7 @@ class PolygonDrawing extends MapTool {
    */
   canvasPressEvent(event: MouseEvent) {
     if (event.button === MouseButton.LeftButton && this._mode !== DrawingMode.EditDraw) {
-      const supportModifyPolygonVertex = false;
-
-      const pointPrimitive = this._pickPointPrimitive(event.pos);
-
-      if (supportModifyPolygonVertex && defined(pointPrimitive)) {
-        // highlight a vertex for dragging
-      } else {
-        this._handleCanvasPressEventForDrawing(event);
-      }
+      this._handleCanvasPressEventForDrawing(event);
     } else if (event.button === MouseButton.RightButton && this._mode !== DrawingMode.EditDraw) {
       // expect point to be added by handleClick
       // this._mode = DrawingMode.AfterDraw;
@@ -237,17 +234,18 @@ class PolygonDrawing extends MapTool {
         new DeveloperError('Polygon did not initialized!');
         return;
       }
+      // On right-clicking while drawing:
       this._polygon.finishDrawing();
+      this._evtPolygonCreated.raiseEvent([this._polygon], [this]);
+      this._mode = DrawingMode.EditDraw;
 
       // if number of vertex < 3, remove and reset polygon
-      if (this._polygon.positions.length < 3) {
+      if (this._polygon.positions.length < MIN_POLYGON_VERTEX_NUM) {
         this.deletePolygon();
         return;
       }
-      // add Polygon
+      // polygon created
       this._polygons.push(this._polygon);
-
-      this._evtPolygonCreated.raiseEvent([this._polygon], [this]);
 
       const camera = this._scene.camera;
 
@@ -259,14 +257,13 @@ class PolygonDrawing extends MapTool {
       this._polygon.update(cullingVolume);
     } else if (event.button === MouseButton.RightButton && this._mode === DrawingMode.EditDraw) {
       if (this._snapVertex) {
-        // Delete vertex
+        // Right-clicking on a vertex
         this.deleteVertex(this._snapVertex);
         // if number of vertex < 3, remove and reset polygon
-        if (this._polygon.positions.length < 3) {
+        if (this._polygon.positions.length < MIN_POLYGON_VERTEX_NUM) {
           this.deletePolygon();
           return;
         }
-        console.info('removed vertex');
       }
     } else if (event.button === MouseButton.LeftButton && this._mode === DrawingMode.EditDraw) {
       this._isDrag = true;
@@ -275,14 +272,15 @@ class PolygonDrawing extends MapTool {
     if (
       event.button === MouseButton.LeftButton &&
       this._mode === DrawingMode.EditDraw &&
-      this._snapMode === SnapMode.SEGMENT
+      this._snapMode === SnapMode.EDGE
     ) {
-      // Add a vertex on polygon line segment
-      if (this._tempSnapPoint) {
+      // Creating a new vertex on edge
+      if (this._focusedSnapPoint) {
         this._snapVertex = this._polygon.insertVertex(
-          this._tempSnapPoint.position,
-          this._tempSnapPoint.segStartIdx
+          this._focusedSnapPoint.position,
+          this._focusedSnapPoint.segStartIdx
         );
+        this._evtVertexAddedInPolygon.raiseEvent([this._snapVertex], [this._polygon], [this]);
       }
     }
   }
@@ -374,13 +372,16 @@ class PolygonDrawing extends MapTool {
       return;
     }
 
-    this._polygon.addPoint(Cartesian3.clone(position, new Cartesian3()));
-    this._evtVertexCreatedWhileDrawing.raiseEvent(
-      [Cartesian3.clone(position, new Cartesian3())],
-      [this._polygon],
-      [this]
-    );
-    if (this._mode !== DrawingMode.Drawing) this._mode = DrawingMode.Drawing;
+    if (!this._isSnappedToFristVertex) {
+      const vertex = this._polygon.addPoint(Cartesian3.clone(position, new Cartesian3()));
+      this._evtVertexCreatedWhileDrawing.raiseEvent([vertex], [this._polygon], [this]);
+      if (this._mode !== DrawingMode.Drawing) this._mode = DrawingMode.Drawing;
+    } else {
+      // On placing the point on the first point:
+      this._polygon.finishDrawing();
+      this._evtPolygonCreated.raiseEvent([this._polygon], [this]);
+      this._mode = DrawingMode.EditDraw;
+    }
 
     Cartesian2.clone(event.pos, lastClickPos);
   }
@@ -420,7 +421,6 @@ class PolygonDrawing extends MapTool {
     this._snapVertex = undefined;
     this._snapMode = SnapMode.NONE;
     this._scene.screenSpaceCameraController.enableRotate = true;
-    console.info('Canvas released');
   }
 
   /**
@@ -433,6 +433,31 @@ class PolygonDrawing extends MapTool {
 
     if (!defined(nextPos) || !nextPos) {
       return;
+    }
+
+    // To snap to first vertex while drawing;
+    const polyline = this._polygon.polyline;
+    if (polyline.positions.length > MIN_POLYGON_VERTEX_NUM) {
+      const distance = Cartesian3.distance(polyline.positions[0], nextPos);
+      const scene = this._scene;
+      const drawingBufferWidth = scene.drawingBufferWidth;
+      const drawingBufferHeight = scene.drawingBufferHeight;
+
+      const metersPerPixel = scene.camera.getPixelSize(
+        this._polygon.boundingSphere,
+        drawingBufferWidth,
+        drawingBufferHeight
+      );
+
+      const pixelDistFromVertex = distance / metersPerPixel;
+
+      if (pixelDistFromVertex < SNAP_PIXELSIZE_TO_VERTEX) {
+        this._isSnappedToFristVertex = true;
+        this._markerPointPrimitive.position = polyline.positions[0];
+        Cartesian3.clone(polyline.positions[0], nextPos);
+      } else {
+        this._isSnappedToFristVertex = false;
+      }
     }
 
     Cartesian3.clone(nextPos, this._tempNextPos);
@@ -454,10 +479,6 @@ class PolygonDrawing extends MapTool {
 
       if (this._focusedPointPrimitive.isMainVertex) {
         polygon.updateMainVertex(this._focusedPointPrimitive, position!);
-      } else {
-        const mainVertexPointPrimitive = polygon.insertPoint(this._focusedPointPrimitive);
-
-        this._setFocusedPointPrimitive(mainVertexPointPrimitive as Vertex);
       }
     }
   }
@@ -473,7 +494,7 @@ class PolygonDrawing extends MapTool {
       return;
     }
 
-    const distance = polyline.getNearestSegmentInfo(position);
+    const distance = polyline.getNearestEdgeInfo(position);
 
     const scene = this._scene;
     const drawingBufferWidth = scene.drawingBufferWidth;
@@ -488,6 +509,10 @@ class PolygonDrawing extends MapTool {
     const pixelDistFromSeg = distance.minHeight / metersPerPixel;
     const pixelDistFromVertex = distance.minDist / metersPerPixel;
 
+    if (!this._isDrag) {
+      this._snapVertex = undefined;
+    }
+
     if (pixelDistFromVertex < SNAP_PIXELSIZE_TO_VERTEX) {
       this._markerPointPrimitive.position = distance.vertexPos;
       this._snapVertex = {
@@ -498,52 +523,31 @@ class PolygonDrawing extends MapTool {
       } as Vertex;
 
       this._snapMode = SnapMode.VERTEX;
-    } else if (pixelDistFromSeg < SNAP_PIXELSIZE_TO_SEGMENT) {
+    } else if (pixelDistFromSeg < SNAP_PIXELSIZE_TO_EDGE) {
       this._markerPointPrimitive.position = distance.basePos;
       this._resetFocusedPointPrimitive();
 
-      this._snapMode = SnapMode.SEGMENT;
+      this._snapMode = SnapMode.EDGE;
     } else {
       this._resetFocusedPointPrimitive();
       this._snapMode = SnapMode.NONE;
     }
 
-    // Vertex snapped or line snapped
-    if (this._snapMode === SnapMode.VERTEX && !this._snapVertex) {
-      console.info('dragging vertex');
-    } else if (this._snapMode === SnapMode.SEGMENT) {
-      console.info('dragging line');
-      this._tempSnapPoint = { segStartIdx: distance.segIdx, position: distance.basePos };
+    // line snapped
+    if (this._snapMode === SnapMode.EDGE) {
+      this._focusedSnapPoint = { segStartIdx: distance.segIdx, position: distance.basePos };
     }
 
+    // Dragging Vertex
     if (this._isDrag && this._snapVertex) {
       this._scene.screenSpaceCameraController.enableRotate = false;
       this._polygon.updateMainVertex(this._snapVertex, position);
+      if (this._snapMode === SnapMode.VERTEX) {
+        this._evtVertexModifiedInPolygon.raiseEvent([this._snapVertex], [this._polygon], [this]);
+      } else if (this._snapMode === SnapMode.EDGE) {
+        // this._evtVertexModifiedInPolygon.raiseEvent([this._snapVertex], [this._polygon], [this]);
+      }
     }
-  }
-
-  /**
-   * Pick point primitive by using scene.pick
-   * @param {Cartesian2} position
-   * @returns
-   * Reference https://cesium.com/learn/cesiumjs/ref-doc/Scene.html?classFilter=scene
-   */
-  _pickPointPrimitive(position: Cartesian2) {
-    const scene = this._scene;
-
-    const pickedObject = scene.pick(position, 1, 1);
-
-    if (!defined(pickedObject)) return null;
-
-    if (!defined(pickedObject.primitive)) {
-      return null;
-    }
-
-    if (pickedObject.primitive.constructor.name !== 'PointPrimitive') {
-      return null;
-    }
-
-    return pickedObject.primitive;
   }
 
   _reset() {
@@ -564,6 +568,16 @@ class PolygonDrawing extends MapTool {
     this._mode = DrawingMode.BeforeDraw;
     this._lastClickPosition.x = Number.POSITIVE_INFINITY;
     this._lastClickPosition.y = Number.POSITIVE_INFINITY;
+  }
+
+  _resetAll() {
+    if (!this.polygons) {
+      const count = this._polygons.length;
+      for (let i = 0; i < count; i++) {
+        this._polygons[i].destroy();
+      }
+      this._polygons = [];
+    }
   }
 
   /**

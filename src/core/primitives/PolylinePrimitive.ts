@@ -24,7 +24,7 @@ import {
   Primitive
 } from 'cesium';
 
-export interface NearestSegmentInfo {
+export interface NearestEdgeInfo {
   minHeight: number;
   segIdx: number;
   basePos: Cartesian3;
@@ -46,6 +46,9 @@ interface PolylinePrimitiveOptions {
   clamped?: boolean;
   depthTest?: boolean;
 }
+
+const cart3Scratch = new Cartesian3();
+const cart3Scratch1 = new Cartesian3();
 /**
  * PolylinePrimitive represents lines geometry which is constructing polygon and draped over terrain or 3DTiles.
  * _id: primitive index
@@ -285,13 +288,13 @@ export class PolylinePrimitive {
   }
 
   /**
-   * Get the nearest segment and vertex from the position
+   * Get the nearest Edge and vertex from the position
    * @param {Cartesian3} pos
-   * @returns {NearestSegmentInfo}
+   * @returns {NearestEdgeInfo}
    */
-  getNearestSegmentInfo(pos: Cartesian3): NearestSegmentInfo {
+  getNearestEdgeInfo(pos: Cartesian3): NearestEdgeInfo {
     const length = this._positions.length;
-    // min distance from line segment
+    // min distance from line Edge
     let minHeight = Number.POSITIVE_INFINITY;
     let segIdx = -1;
     // min distance from vertex
@@ -299,7 +302,7 @@ export class PolylinePrimitive {
     let vertexIdx = -1;
     let vertexPos = Cartesian3.ZERO;
 
-    const basePos = new Cartesian3();
+    let basePos = Cartesian3.ZERO;
 
     for (let i = 0; i < length; i++) {
       const segStartPos = this._positions[i];
@@ -333,10 +336,9 @@ export class PolylinePrimitive {
           segIdx = i;
 
           const dbase = Math.sqrt(b * b - minHeight * minHeight) / a;
-          const delta = new Cartesian3();
-          Cartesian3.subtract(segEndPos, segStartPos, delta);
-          Cartesian3.multiplyByScalar(delta, dbase, delta);
-          Cartesian3.add(segStartPos, delta, basePos);
+          let delta = Cartesian3.subtract(segEndPos, segStartPos, cart3Scratch);
+          delta = Cartesian3.multiplyByScalar(delta, dbase, cart3Scratch);
+          basePos = Cartesian3.add(segStartPos, delta, cart3Scratch1);
         }
       }
     }

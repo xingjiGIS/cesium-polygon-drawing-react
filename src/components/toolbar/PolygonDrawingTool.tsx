@@ -2,14 +2,6 @@ import React from 'react';
 import logger from 'loglevel';
 import { PolygonDrawingToolProps } from './toolbar.styles';
 import AaravContext, { AaravContextType } from '../../AaravContext';
-import {
-  onPolygonCreated,
-  onPolygonDeleted,
-  onVertexAddedInPolygon,
-  onVertexCreatedWhileDrawing,
-  onVertexDeletedInPolygon,
-  onVertexModifiedInPolygon
-} from '../Events';
 
 const PolygonDrawingTool = ({ id, enabled }: PolygonDrawingToolProps) => {
   const { aaravMapViewer } = React.useContext(AaravContext) as AaravContextType;
@@ -26,30 +18,31 @@ const PolygonDrawingTool = ({ id, enabled }: PolygonDrawingToolProps) => {
     // @ts-ignore
     viewer.drawingTools.activatePolygonDrawing();
     // @ts-ignore
-    viewer.drawingTools.polygonDrawing._evtVertexCreatedWhileDrawing.addEventListener(
-      onVertexCreatedWhileDrawing
-    );
+    const drawingTool = viewer.drawingTools.polygonDrawing;
     // @ts-ignore
-    viewer.drawingTools.polygonDrawing._evtPolygonCreated.addEventListener(onPolygonCreated);
+    drawingTool.evtVertexCreatedWhileDrawing.addEventListener(() => {
+      console.info('VertexCreatedWhileDrawing event triggered!');
+    });
     // @ts-ignore
-    viewer.drawingTools.polygonDrawing._evtVertexModifiedInPolygon.addEventListener(
-      onVertexModifiedInPolygon
-    );
+    drawingTool.evtPolygonCreated.addEventListener(() => {
+      console.info('PolygonCreated event triggered!');
+    });
     // @ts-ignore
-    viewer.drawingTools.polygonDrawing._evtVertexAddedInPolygon.addEventListener(
-      onVertexAddedInPolygon
-    );
+    drawingTool.evtVertexModifiedInPolygon.addEventListener(() => {
+      console.info('VertexModifiedInPolygon event triggered!');
+    });
     // @ts-ignore
-    viewer.drawingTools.polygonDrawing._evtVertexDeletedInPolygon.addEventListener(
-      onVertexDeletedInPolygon
-    );
+    drawingTool.evtVertexAddedInPolygon.addEventListener(() => {
+      console.info('VertexAddedInPolygon event triggered!');
+    });
     // @ts-ignore
-    viewer.drawingTools.polygonDrawing._evtPolygonDeleted.addEventListener(onPolygonDeleted);
-
-    // Another Example;
-    // viewer.drawingTools.polygonDrawing._evtPolygonDeleted.addEventListener(() => {
-    //   console.info('Polygon Deleted');
-    // });
+    drawingTool.evtVertexDeletedInPolygon.addEventListener(() => {
+      console.info('VertexDeletedInPolygon event triggered!');
+    });
+    // @ts-ignore
+    drawingTool.evtPolygonDeleted.addEventListener(() => {
+      console.info('PolygonDeleted event triggered!');
+    });
   };
 
   return (
