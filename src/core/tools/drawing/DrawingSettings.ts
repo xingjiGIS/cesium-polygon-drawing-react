@@ -12,11 +12,6 @@ import {
   VerticalOrigin,
   ClassificationType
 } from 'cesium';
-import logger from 'loglevel';
-import DrawingMode from './DrawingMode';
-
-import { Polygon } from './Polygon';
-import { PolygonDrawing } from './PolygonDrawing';
 
 const defaultLabelPixelOffset = new Cartesian2(0, -9);
 
@@ -132,7 +127,7 @@ class DrawingSettings {
   // return point options
   public static getPointOptions = function () {
     return {
-      pixelSize: 10,
+      pixelSize: 7,
       color: DrawingSettings.color,
       position: new Cartesian3(),
       disableDepthTestDistance: Number.POSITIVE_INFINITY, // for draw-over
@@ -196,36 +191,6 @@ class DrawingSettings {
       disableDepthTestDistance: Number.POSITIVE_INFINITY, // for draw-over
       position: new Cartesian3()
     };
-  };
-
-  // Polygon Drawing Event Definition
-  public static onPolygonCreated = (polygon: Polygon[], tool: PolygonDrawing[]) => {
-    if (!polygon) {
-      logger.error('Polygon is not created - 0');
-      return;
-    }
-
-    if (polygon.length === 0) {
-      logger.error('Polygon is not created - 1');
-      return;
-    }
-
-    if (!tool) {
-      logger.error('Drawing Tool is not defined - 0');
-      return;
-    }
-
-    if (tool.length === 0) {
-      logger.error('Drawing Tool is not defined - 1');
-    }
-
-    const polycon = polygon[0];
-    const toolcon = tool[0];
-
-    logger.info('Polygon Created : ', polycon);
-
-    toolcon.mode = DrawingMode.EditDraw;
-    logger.info('Changed Edit Mode');
   };
 }
 
