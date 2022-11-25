@@ -28,3 +28,17 @@
 
 - Add comments
 - Adding snap functionalities (working on)
+
+### 0.2.3 - 2022-11-23
+
+- Add snap functionality
+
+### 0.2.4 - 2022-11-24
+
+- Dragging vertex
+- Creating a vertex on edge
+
+### 0.2.5 - 2022-11-25
+
+- Finished all functionalities
+
