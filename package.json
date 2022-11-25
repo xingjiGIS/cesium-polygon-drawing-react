@@ -1,6 +1,6 @@
 {
   "name": "gis-app",
-  "version": "0.2.2",
+  "version": "0.2.5",
   "private": true,
   "dependencies": {
     "@baristalabs/craco-raw-loader": "^1.2.0",
