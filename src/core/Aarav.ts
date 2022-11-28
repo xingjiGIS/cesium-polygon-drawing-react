@@ -22,35 +22,27 @@ class Aarav {
   start() {
     logger.info('Aarav-Web', packageJson.version);
 
-    this.aaravViewer.createAaravViewer();
+    this.aaravViewer.createCesiumViewer();
   }
 
   cesiumViewer(): Viewer {
     // preConditionStart
-    if (!defined(this.aaravViewer.viewer)) {
-      throw new DeveloperError('Viewer is required.');
+    if (!defined(this.aaravViewer.cesiumViewer)) {
+      throw new DeveloperError('cesiumViewer is required.');
     }
     // preConditionEnd
 
-    return this.aaravViewer.viewer!;
+    return this.aaravViewer.cesiumViewer!;
   }
 
   get scene(): Scene {
     // preConditionStart
-    if (!defined(this.aaravViewer.viewer)) {
-      throw new DeveloperError('Viewer is required.');
+    if (!defined(this.aaravViewer.cesiumViewer)) {
+      throw new DeveloperError('cesiumViewer is required.');
     }
     // preConditionEnd
 
-    return this.aaravViewer.viewer!.scene;
-  }
-
-  get viewer(): Viewer {
-    if (!defined(this.aaravViewer.viewer)) {
-      throw new DeveloperError('Viewer is required.');
-    }
-
-    return this.aaravViewer.viewer!;
+    return this.aaravViewer.cesiumViewer!.scene;
   }
 }
 

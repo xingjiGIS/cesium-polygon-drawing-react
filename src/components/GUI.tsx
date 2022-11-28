@@ -9,7 +9,7 @@ import AaravViewerWrapper from './AaravViewerWrapper';
 
 const GUI = () => {
   const { aaravViewer } = React.useContext(AaravContext) as AaravContextType;
-  const viewer = aaravViewer.viewer;
+  const viewer = aaravViewer.cesiumViewer;
 
   if (!viewer) {
     logger.error('failed to get viewer in GUI');

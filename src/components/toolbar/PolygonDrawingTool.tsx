@@ -5,7 +5,7 @@ import AaravContext, { AaravContextType } from '../../AaravContext';
 
 const PolygonDrawingTool = ({ id, enabled }: PolygonDrawingToolProps) => {
   const { aaravViewer } = React.useContext(AaravContext) as AaravContextType;
-  const viewer = aaravViewer.viewer;
+  const viewer = aaravViewer.cesiumViewer;
   const [aaravViewerCreated, setAaravViewerCreated] = useState(viewer !== undefined);
 
   useEffect(() => {

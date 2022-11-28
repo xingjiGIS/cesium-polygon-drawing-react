@@ -9,10 +9,10 @@ import { DrawingToolsMixin } from './tools/drawing';
  *
  */
 class AaravViewer {
-  private _viewer: Viewer | undefined;
+  private _cesiumViewer: Viewer | undefined;
   readonly aarav: Aarav;
   mapContainer: HTMLElement | undefined;
-  destroyingAaravViewer: boolean = false;
+  destroyingCesiumViewer: boolean = false;
 
   // Cesium Event to process something when create aaravViewer
   readonly evtAaravViewerCreated = new Event();
@@ -27,10 +27,10 @@ class AaravViewer {
     return this.mapContainer !== undefined;
   }
 
-  createAaravViewer() {
+  createCesiumViewer() {
     // preConditionStart
-    if (defined(this._viewer)) {
-      throw new DeveloperError('aaravViewer already created!');
+    if (defined(this._cesiumViewer)) {
+      throw new DeveloperError('cesiumViewer already created!');
     }
     // preConditionEnd
 
@@ -48,36 +48,36 @@ class AaravViewer {
     // @ts-ignore
     viewer._element.style = 'width: 100vw;';
 
-    this._viewer = viewer;
+    this._cesiumViewer = viewer;
     this._initMixins();
 
     // Trigger event
     this.evtAaravViewerCreated.raiseEvent();
 
-    return this._viewer;
+    return this._cesiumViewer;
   }
 
   _initMixins() {
-    const viewer = this._viewer;
+    const viewer = this._cesiumViewer;
 
     viewer!.extend(DrawingToolsMixin);
   }
 
-  get viewer() {
-    return this._viewer;
+  get cesiumViewer() {
+    return this._cesiumViewer;
   }
 
   attach(mapContainer: HTMLElement) {
     // preConditionStart
-    if (!defined(this._viewer)) {
-      throw new DeveloperError('aaravViewer required!');
+    if (!defined(this._cesiumViewer)) {
+      throw new DeveloperError('cesiumViewer required!');
     }
     // preConditionEnd
 
     this.mapContainer = mapContainer;
 
     // move from root html element to this.mapContainer html element
-    this.mapContainer.append(this._viewer!.container);
+    this.mapContainer.append(this._cesiumViewer!.container);
   }
 
   // remove mapContainer
@@ -86,26 +86,26 @@ class AaravViewer {
       return;
     }
 
-    this.destroyAaravViewer();
+    this.destroyCesiumViewer();
 
     this.mapContainer = undefined;
   }
 
   // Destroy cesium viewer
-  private destroyAaravViewer() {
-    if (this.destroyingAaravViewer) {
+  private destroyCesiumViewer() {
+    if (this.destroyingCesiumViewer) {
       return;
     }
 
-    this.destroyingAaravViewer = true;
+    this.destroyingCesiumViewer = true;
 
-    const cesiumViewer = this._viewer;
+    const cesiumViewer = this._cesiumViewer;
 
     cesiumViewer!.destroy();
     this.evtAaravViewerDestroyed.raiseEvent();
 
-    this._viewer = undefined;
-    this.destroyingAaravViewer = false;
+    this._cesiumViewer = undefined;
+    this.destroyingCesiumViewer = false;
   }
 }
 

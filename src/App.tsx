@@ -9,10 +9,10 @@ interface AppProps {
 }
 
 const App = ({ aarav }: AppProps) => {
-  let viewer = aarav.aaravViewer.viewer;
   const aaravViewer = aarav.aaravViewer;
+  let viewer = aaravViewer.cesiumViewer;
   if (!viewer) {
-    viewer = aarav.aaravViewer.createAaravViewer();
+    viewer = aaravViewer.createCesiumViewer();
   }
 
   const contextValue = useMemo(() => ({ viewer, aaravViewer }), [viewer, aaravViewer]);
