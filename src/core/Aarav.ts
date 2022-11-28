@@ -3,10 +3,8 @@
 
 import { defined, DeveloperError, Scene, Viewer } from 'cesium';
 import logger from 'loglevel';
-import { emitCustomEvent } from 'react-custom-events';
 
 import packageJson from '../../package.json';
-import { SET_STATUS_MESSAGE, SHOW_MESSAGE } from '../types/events';
 import { AaravViewer } from './AaravViewer';
 
 class Aarav {
@@ -15,7 +13,7 @@ class Aarav {
    */
   readonly rootElementId = 'root';
 
-  readonly mainViewer = new AaravViewer(this);
+  readonly aaravViewer = new AaravViewer(this);
 
   constructor() {
     logger.setLevel('info');
@@ -24,45 +22,35 @@ class Aarav {
   start() {
     logger.info('Aarav-Web', packageJson.version);
 
-    this.mainViewer.createAaravMapViewer();
+    this.aaravViewer.createAaravViewer();
   }
 
   cesiumViewer(): Viewer {
     // preConditionStart
-    if (!defined(this.mainViewer.viewer)) {
-      throw new DeveloperError('aaravMapViewer is required.');
+    if (!defined(this.aaravViewer.viewer)) {
+      throw new DeveloperError('Viewer is required.');
     }
     // preConditionEnd
 
-    return this.mainViewer.viewer!;
+    return this.aaravViewer.viewer!;
   }
 
   get scene(): Scene {
     // preConditionStart
-    if (!defined(this.mainViewer.viewer)) {
-      throw new DeveloperError('aaravMapViewer is required.');
+    if (!defined(this.aaravViewer.viewer)) {
+      throw new DeveloperError('Viewer is required.');
     }
     // preConditionEnd
 
-    return this.mainViewer.viewer!.scene;
+    return this.aaravViewer.viewer!.scene;
   }
 
-  // eslint-disable-next-line class-methods-use-this
-  showMessage(param: { type: 'warning' | 'info' | 'error'; message: string }) {
-    emitCustomEvent(SHOW_MESSAGE, param);
-  }
-
-  // eslint-disable-next-line class-methods-use-this
-  setStatusMessage(message: string) {
-    emitCustomEvent(SET_STATUS_MESSAGE, { message });
-  }
-
-  get mapViewer(): Viewer {
-    if (!defined(this.mainViewer.viewer)) {
-      throw new DeveloperError('aaravMapViewer is required.');
+  get viewer(): Viewer {
+    if (!defined(this.aaravViewer.viewer)) {
+      throw new DeveloperError('Viewer is required.');
     }
 
-    return this.mainViewer.viewer!;
+    return this.aaravViewer.viewer!;
   }
 }
 

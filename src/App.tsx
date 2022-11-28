@@ -9,16 +9,13 @@ interface AppProps {
 }
 
 const App = ({ aarav }: AppProps) => {
-  let aaravMapViewer = aarav.mainViewer.viewer;
-  const aaravMainViewer = aarav.mainViewer;
-  if (!aaravMapViewer) {
-    aaravMapViewer = aarav.mainViewer.createAaravMapViewer();
+  let viewer = aarav.aaravViewer.viewer;
+  const aaravViewer = aarav.aaravViewer;
+  if (!viewer) {
+    viewer = aarav.aaravViewer.createAaravViewer();
   }
 
-  const contextValue = useMemo(
-    () => ({ aaravMapViewer, aaravMainViewer }),
-    [aaravMapViewer, aaravMainViewer]
-  );
+  const contextValue = useMemo(() => ({ viewer, aaravViewer }), [viewer, aaravViewer]);
   return (
     <AaravContext.Provider value={contextValue}>
       <GUI />

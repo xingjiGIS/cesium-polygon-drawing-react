@@ -5,19 +5,19 @@ import { DrawingToolsMixin } from './tools/drawing';
  * Create a Cesium viewer for aarav
  * And attach it to a HTML element
  *
- * Cesium Events evtMapViewerCreated, evtMapViewerDestroyed will be assigned later.
+ * Cesium Events evtAaravViewerCreated, evtAaravViewerDestroyed will be assigned later.
  *
  */
 class AaravViewer {
   private _viewer: Viewer | undefined;
   readonly aarav: Aarav;
   mapContainer: HTMLElement | undefined;
-  destroyingAaravMapViewer: boolean = false;
+  destroyingAaravViewer: boolean = false;
 
-  // Cesium Event to process something when create mapviewer
-  readonly evtMapViewerCreated = new Event();
-  // Cesium Event to process something when destroy mapviewer
-  readonly evtMapViewerDestroyed = new Event();
+  // Cesium Event to process something when create aaravViewer
+  readonly evtAaravViewerCreated = new Event();
+  // Cesium Event to process something when destroy aaravViewer
+  readonly evtAaravViewerDestroyed = new Event();
 
   constructor(aarav: Aarav) {
     this.aarav = aarav;
@@ -27,10 +27,10 @@ class AaravViewer {
     return this.mapContainer !== undefined;
   }
 
-  createAaravMapViewer() {
+  createAaravViewer() {
     // preConditionStart
     if (defined(this._viewer)) {
-      throw new DeveloperError('aaravMapViewer already created!');
+      throw new DeveloperError('aaravViewer already created!');
     }
     // preConditionEnd
 
@@ -39,7 +39,7 @@ class AaravViewer {
     const cesiumContainer = document.createElement('div');
 
     root!.append(cesiumContainer);
-    // const aaravMapViewer = new AaravMapViewer(cesiumContainer);
+
     if (!defined(cesiumContainer)) {
       throw new DeveloperError('container is required.');
     }
@@ -52,7 +52,7 @@ class AaravViewer {
     this._initMixins();
 
     // Trigger event
-    this.evtMapViewerCreated.raiseEvent();
+    this.evtAaravViewerCreated.raiseEvent();
 
     return this._viewer;
   }
@@ -70,7 +70,7 @@ class AaravViewer {
   attach(mapContainer: HTMLElement) {
     // preConditionStart
     if (!defined(this._viewer)) {
-      throw new DeveloperError('aaravMapViewer required!');
+      throw new DeveloperError('aaravViewer required!');
     }
     // preConditionEnd
 
@@ -86,26 +86,26 @@ class AaravViewer {
       return;
     }
 
-    this.destroyMapViewer();
+    this.destroyAaravViewer();
 
     this.mapContainer = undefined;
   }
 
   // Destroy cesium viewer
-  private destroyMapViewer() {
-    if (this.destroyingAaravMapViewer) {
+  private destroyAaravViewer() {
+    if (this.destroyingAaravViewer) {
       return;
     }
 
-    this.destroyingAaravMapViewer = true;
+    this.destroyingAaravViewer = true;
 
     const cesiumViewer = this._viewer;
 
     cesiumViewer!.destroy();
-    this.evtMapViewerDestroyed.raiseEvent();
+    this.evtAaravViewerDestroyed.raiseEvent();
 
     this._viewer = undefined;
-    this.destroyingAaravMapViewer = false;
+    this.destroyingAaravViewer = false;
   }
 }
 
