@@ -1,6 +1,6 @@
-import { defined, DeveloperError, Event } from 'cesium';
-import { AaravMapViewer } from './AaravMapViewer';
+import { defined, DeveloperError, Event, Viewer } from 'cesium';
 import { Aarav } from './Aarav';
+import { DrawingToolsMixin } from './tools/drawing';
 /**
  * Create a Cesium viewer for aarav
  * And attach it to a HTML element
@@ -9,9 +9,9 @@ import { Aarav } from './Aarav';
  *
  */
 class AaravViewer {
+  private _viewer: Viewer | undefined;
   readonly aarav: Aarav;
   mapContainer: HTMLElement | undefined;
-  aaravMapViewer: AaravMapViewer | undefined;
   destroyingAaravMapViewer: boolean = false;
 
   // Cesium Event to process something when create mapviewer
@@ -29,7 +29,7 @@ class AaravViewer {
 
   createAaravMapViewer() {
     // preConditionStart
-    if (defined(this.aaravMapViewer)) {
+    if (defined(this._viewer)) {
       throw new DeveloperError('aaravMapViewer already created!');
     }
     // preConditionEnd
@@ -39,19 +39,37 @@ class AaravViewer {
     const cesiumContainer = document.createElement('div');
 
     root!.append(cesiumContainer);
-    const aaravMapViewer = new AaravMapViewer(cesiumContainer);
+    // const aaravMapViewer = new AaravMapViewer(cesiumContainer);
+    if (!defined(cesiumContainer)) {
+      throw new DeveloperError('container is required.');
+    }
 
-    this.aaravMapViewer = aaravMapViewer;
+    const viewer: Viewer = new Viewer(cesiumContainer);
+    // @ts-ignore
+    viewer._element.style = 'width: 100vw;';
+
+    this._viewer = viewer;
+    this._initMixins();
 
     // Trigger event
     this.evtMapViewerCreated.raiseEvent();
 
-    return aaravMapViewer;
+    return this._viewer;
+  }
+
+  _initMixins() {
+    const viewer = this._viewer;
+
+    viewer!.extend(DrawingToolsMixin);
+  }
+
+  get viewer() {
+    return this._viewer;
   }
 
   attach(mapContainer: HTMLElement) {
     // preConditionStart
-    if (!defined(this.aaravMapViewer)) {
+    if (!defined(this._viewer)) {
       throw new DeveloperError('aaravMapViewer required!');
     }
     // preConditionEnd
@@ -59,7 +77,7 @@ class AaravViewer {
     this.mapContainer = mapContainer;
 
     // move from root html element to this.mapContainer html element
-    this.mapContainer.append(this.aaravMapViewer!.viewer.container);
+    this.mapContainer.append(this._viewer!.container);
   }
 
   // remove mapContainer
@@ -81,12 +99,12 @@ class AaravViewer {
 
     this.destroyingAaravMapViewer = true;
 
-    const cesiumViewer = this.aaravMapViewer?.viewer;
+    const cesiumViewer = this._viewer;
 
     cesiumViewer!.destroy();
     this.evtMapViewerDestroyed.raiseEvent();
 
-    this.aaravMapViewer = undefined;
+    this._viewer = undefined;
     this.destroyingAaravMapViewer = false;
   }
 }

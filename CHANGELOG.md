@@ -41,4 +41,3 @@
 ### 0.2.5 - 2022-11-25
 
 - Finished all functionalities
-

@@ -5,7 +5,7 @@ import AaravContext, { AaravContextType } from '../../AaravContext';
 
 const PolygonDrawingTool = ({ id, enabled }: PolygonDrawingToolProps) => {
   const { aaravMapViewer } = React.useContext(AaravContext) as AaravContextType;
-  const viewer = aaravMapViewer!.viewer;
+  const viewer = aaravMapViewer;
 
   // Enable drawing tool
   const onClick = () => {

@@ -9,7 +9,7 @@ interface AppProps {
 }
 
 const App = ({ aarav }: AppProps) => {
-  let aaravMapViewer = aarav.mainViewer.aaravMapViewer;
+  let aaravMapViewer = aarav.mainViewer.viewer;
   const aaravMainViewer = aarav.mainViewer;
   if (!aaravMapViewer) {
     aaravMapViewer = aarav.mainViewer.createAaravMapViewer();

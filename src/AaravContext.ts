@@ -1,9 +1,9 @@
+import { Viewer } from 'cesium';
 import React from 'react';
-import { AaravMapViewer } from './core/AaravMapViewer';
 import { AaravViewer } from './core/AaravViewer';
 
 export type AaravContextType = {
-  aaravMapViewer: AaravMapViewer | undefined;
+  aaravMapViewer: Viewer | undefined;
   aaravMainViewer: AaravViewer;
 };
 
