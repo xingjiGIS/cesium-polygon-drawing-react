@@ -3,7 +3,7 @@
 // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
 import {
   Cartesian2,
-  // Cartesian3,
+  Cartesian3,
   defined,
   DeveloperError,
   Event,
@@ -16,7 +16,7 @@ import {
  * Map tools are user interactive tools for manipulating the canvas
  */
 
-import { getWorldPosition } from '../util';
+import { getWorldPosition, getNearestEdgeInfo } from '../util';
 import { MouseButton } from './global';
 
 let oldCursorStyle: string | undefined;
@@ -187,6 +187,13 @@ class MapTool {
     const { scene } = viewer;
 
     return getWorldPosition(scene, mousePosition, result);
+  }
+
+  getNearestEdgeInfo(positions: Cartesian3[], pos: Cartesian3) {
+    const viewer = this._viewer;
+    const { scene } = viewer;
+
+    return getNearestEdgeInfo(scene, positions, pos);
   }
 }
 

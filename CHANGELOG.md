@@ -65,3 +65,7 @@
 ### 0.2.9 - 2022-12-6
 
 - fix imagery layer and terrain
+
+### 0.3.0 - 2022-12-7
+
+- fix drawing tool on terrain

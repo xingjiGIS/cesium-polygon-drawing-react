@@ -497,7 +497,7 @@ class PolygonDrawing extends MapTool {
       return;
     }
 
-    const nearestInfo = polyline.getNearestEdgeInfo(position);
+    const nearestInfo = this.getNearestEdgeInfo(this._polygon.polyline.positions, position);
 
     const scene = this._scene;
     const drawingBufferWidth = scene.drawingBufferWidth;
