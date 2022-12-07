@@ -3,6 +3,7 @@
 // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
 import {
   Cartesian2,
+  Cartographic,
   // Cartesian3,
   defined,
   DeveloperError,
@@ -16,7 +17,7 @@ import {
  * Map tools are user interactive tools for manipulating the canvas
  */
 
-import { getWorldPosition } from '../util';
+import { getWorldPosition, getHeight, getWorldCartographic } from '../util';
 import { MouseButton } from './global';
 
 let oldCursorStyle: string | undefined;
@@ -187,6 +188,30 @@ class MapTool {
     const { scene } = viewer;
 
     return getWorldPosition(scene, mousePosition, result);
+  }
+
+  /**
+   * @param {Cartographic} cartographic
+   * @return {number|undefined}
+   */
+  getHeight(cartographic: Cartographic) {
+    const viewer = this._viewer;
+    const { scene } = viewer;
+
+    return getHeight(scene, cartographic);
+  }
+
+  /**
+   * Get world cartographic
+   * @param mousePosition
+   * @param result
+   * @returns
+   */
+  getWorldCartographic(mousePosition: any, result: any) {
+    const viewer = this._viewer;
+    const { scene } = viewer;
+
+    return getWorldCartographic(scene, mousePosition, result);
   }
 }
 

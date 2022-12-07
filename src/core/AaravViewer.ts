@@ -4,6 +4,7 @@ import {
   defined,
   DeveloperError,
   Event,
+  Rectangle,
   UrlTemplateImageryProvider,
   Viewer
 } from 'cesium';
@@ -11,9 +12,13 @@ import { Aarav } from './Aarav';
 import { DrawingToolsMixin } from './tools/drawing';
 
 const rasterUrl =
-  'https://plt-shared-dev.aereo.co.in:8001/ortho/z/x/y.png?key=rb-iterations-dev/orthomosaic/d4ca6a08-79c0-4d45-872e-9979cbe24bed_cog.tif';
+  'https://plt-shared-dev.aereo.co.in:8001/ortho/{z}/{x}/{y}.png?key=rb-iterations-dev/orthomosaic/d4ca6a08-79c0-4d45-872e-9979cbe24bed_cog.tif';
 const terrainURL =
   'https://plt-shared-dev.aereo.co.in:8002/?folder_name=d4ca6a08-79c0-4d45-872e-9979cbe24bed_tt&key=rb-iterations-dev/terrain_tiles/d4ca6a08-79c0-4d45-872e-9979cbe24bed_tt';
+const viewBounds = [87.01091189016857, 23.802298682242647, 87.02987852815343, 23.817440580860772];
+const minZoom = 14;
+const maxZoom = 19;
+
 /**
  * Create a Cesium viewer for aarav
  * And attach it to a HTML element
@@ -123,9 +128,11 @@ class AaravViewer {
     }
 
     const cesiumImageryLayer = new UrlTemplateImageryProvider({
-      url: rasterUrl
+      url: rasterUrl,
+      rectangle: Rectangle.fromDegrees(viewBounds[0], viewBounds[1], viewBounds[2], viewBounds[3]),
+      minimumLevel: minZoom,
+      maximumLevel: maxZoom
     });
-
     const layers = this._cesiumViewer.scene.imageryLayers;
     const imageryLayer = layers.addImageryProvider(cesiumImageryLayer);
     imageryLayer.alpha = 1.0;

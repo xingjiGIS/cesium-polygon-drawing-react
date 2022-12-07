@@ -156,7 +156,8 @@ export class Polygon {
         combine(
           {
             show: options.show,
-            positions: options.positions
+            positions: options.positions,
+            scene: scene
           },
           polylineOptions
         )

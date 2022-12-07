@@ -4,6 +4,7 @@ import {
   ArcType,
   BoundingSphere,
   Cartesian3,
+  Cartographic,
   Color,
   ColorGeometryInstanceAttribute,
   createGuid,
@@ -21,7 +22,8 @@ import {
   PolylineColorAppearance,
   PolylineGeometry,
   PolylineMaterialAppearance,
-  Primitive
+  Primitive,
+  Scene
 } from 'cesium';
 
 export interface NearestEdgeInfo {
@@ -45,10 +47,43 @@ interface PolylinePrimitiveOptions {
   loop?: boolean;
   clamped?: boolean;
   depthTest?: boolean;
+  scene?: Scene;
 }
 
 const cart3Scratch = new Cartesian3();
-const cart3Scratch1 = new Cartesian3();
+const scratchCarto = new Cartographic();
+
+function distanceBetweenCarto(a: Cartographic, b: Cartographic) {
+  return Math.sqrt(
+    (a.longitude - b.longitude) * (a.longitude - b.longitude) +
+      (a.latitude - b.latitude) * (a.latitude - b.latitude)
+  );
+}
+
+function _updateHeightOfVertex(scene: Scene, positions: Cartesian3[]) {
+  const ellipsoid = scene.globe.ellipsoid;
+
+  positions.forEach((position) => {
+    ellipsoid.cartesianToCartographic(position, scratchCarto);
+
+    scratchCarto.height = 0;
+
+    const height = scene.globe.getHeight(scratchCarto);
+
+    Cartesian3.fromRadians(
+      scratchCarto.longitude,
+      scratchCarto.latitude,
+      height,
+      ellipsoid,
+      cart3Scratch
+    );
+
+    position.x = cart3Scratch.x;
+    position.y = cart3Scratch.y;
+    position.z = cart3Scratch.z;
+  });
+}
+
 /**
  * PolylinePrimitive represents lines geometry which is constructing polygon and draped over terrain or 3DTiles.
  * _id: primitive index
@@ -81,6 +116,7 @@ export class PolylinePrimitive {
   private _loop: boolean;
   private readonly _clamped: boolean;
   private readonly _depthTest: boolean;
+  private readonly _scene: Scene | undefined;
 
   constructor(options: PolylinePrimitiveOptions) {
     this.show = defaultValue(options.show, true);
@@ -97,7 +133,7 @@ export class PolylinePrimitive {
     this._loop = defaultValue(options.loop, false);
     this._clamped = defaultValue(options.clamped, true);
     this._depthTest = defaultValue(options.depthTest, false);
-
+    this._scene = defaultValue(options.scene, undefined);
     this._update = true;
   }
 
@@ -115,6 +151,7 @@ export class PolylinePrimitive {
       return;
     }
 
+    const scene = this._scene;
     let positions = this._positions;
     if (!defined(positions) || positions.length < 2) {
       if (this._primitive) {
@@ -138,6 +175,7 @@ export class PolylinePrimitive {
       let geometry;
 
       if (this._clamped) {
+        _updateHeightOfVertex(scene!, positions);
         geometry = new GroundPolylineGeometry({
           positions: positions,
           width: this.width,
@@ -296,31 +334,47 @@ export class PolylinePrimitive {
     const length = this._positions.length;
     // min distance from line Edge
     let minHeight = Number.POSITIVE_INFINITY;
+    let minHeightCarto = Number.POSITIVE_INFINITY;
     let segIdx = -1;
     // min distance from vertex
     let minDist = Number.POSITIVE_INFINITY;
     let vertexIdx = -1;
-    let vertexPos = Cartesian3.ZERO;
+    let vertexPos = new Cartesian3();
 
-    let basePos = Cartesian3.ZERO;
+    const basePos = new Cartesian3();
+
+    const scene = this._scene!;
+    const ellipsoid = scene.globe.ellipsoid;
+
+    const carto = new Cartographic();
+    ellipsoid.cartesianToCartographic(pos, carto);
 
     for (let i = 0; i < length; i++) {
       const segStartPos = this._positions[i];
+      const segStartCarto = new Cartographic();
+      ellipsoid.cartesianToCartographic(segStartPos, segStartCarto);
+      segStartCarto.height = 0;
+
       const segEndPos = this._positions[(i + 1) % length];
-      const segMidPos = new Cartesian3(
-        (segStartPos.x + segEndPos.x) / 2,
-        (segStartPos.y + segEndPos.y) / 2,
-        (segStartPos.z + segEndPos.z) / 2
+      const segEndCarto = new Cartographic();
+      ellipsoid.cartesianToCartographic(segEndPos, segEndCarto);
+      segEndCarto.height = 0;
+
+      const segMidCarto = new Cartographic(
+        (segStartCarto.longitude + segEndCarto.longitude) / 2,
+        (segStartCarto.latitude + segEndCarto.latitude) / 2,
+        0
       );
 
-      const radius0 = Cartesian3.distance(segMidPos, segStartPos);
-      const radius1 = Cartesian3.distance(segMidPos, pos);
-      const a = Cartesian3.distance(segStartPos, segEndPos);
-      const c = Cartesian3.distance(segEndPos, pos);
-      const b = Cartesian3.distance(segStartPos, pos);
+      const radius0 = distanceBetweenCarto(segMidCarto, segStartCarto);
+      const radius1 = distanceBetweenCarto(segMidCarto, carto);
+      const a = distanceBetweenCarto(segStartCarto, segEndCarto);
+      const c = distanceBetweenCarto(segEndCarto, carto);
+      const b = distanceBetweenCarto(segStartCarto, carto);
 
-      if (minDist > b) {
-        minDist = b;
+      const distanceToVertex = Cartesian3.distance(pos, segStartPos);
+      if (minDist > distanceToVertex) {
+        minDist = distanceToVertex;
         vertexIdx = i;
         vertexPos = segStartPos;
       }
@@ -331,14 +385,38 @@ export class PolylinePrimitive {
         const area = Math.sqrt(s * (s - a) * (s - b) * (s - c));
         const height = area / a;
 
-        if (minHeight > height) {
-          minHeight = height;
+        if (minHeightCarto > height) {
+          minHeightCarto = height;
           segIdx = i;
 
-          const dbase = Math.sqrt(b * b - minHeight * minHeight) / a;
-          let delta = Cartesian3.subtract(segEndPos, segStartPos, cart3Scratch);
-          delta = Cartesian3.multiplyByScalar(delta, dbase, cart3Scratch);
-          basePos = Cartesian3.add(segStartPos, delta, cart3Scratch1);
+          const dbase = Math.sqrt(b * b - minHeightCarto * minHeightCarto) / a;
+          const delta = new Cartographic(
+            (segEndCarto.longitude - segStartCarto.longitude) * dbase,
+            (segEndCarto.latitude - segStartCarto.latitude) * dbase,
+            0
+          );
+
+          const basePosCarto = new Cartographic(
+            segStartCarto.longitude + delta.longitude,
+            segStartCarto.latitude + delta.latitude,
+            0
+          );
+
+          const altitude = scene.globe.getHeight(basePosCarto);
+
+          Cartesian3.fromRadians(
+            basePosCarto.longitude,
+            basePosCarto.latitude,
+            altitude,
+            ellipsoid,
+            cart3Scratch
+          );
+
+          basePos.x = cart3Scratch.x;
+          basePos.y = cart3Scratch.y;
+          basePos.z = cart3Scratch.z;
+
+          minHeight = Cartesian3.distance(basePos, pos);
         }
       }
     }
