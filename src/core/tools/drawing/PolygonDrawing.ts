@@ -129,6 +129,14 @@ class PolygonDrawing extends MapTool {
     this._isDrag = false;
     this._isSnappedToFirstVertex = false;
     this._snapMode = SnapMode.NONE;
+
+    scene.camera.moveEnd.addEventListener(() => {
+      if (this.polygons) {
+        for (let i = 0; i < this.polygons.length; i++) {
+          this.polygons[i].updateMainVertecies();
+        }
+      }
+    });
   }
 
   /**
