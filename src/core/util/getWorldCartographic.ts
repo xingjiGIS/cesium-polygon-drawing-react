@@ -21,7 +21,6 @@ const rayScratch = new Ray();
  * Computes the world position on either the terrain or tileset from a mouse position.
  *
  * @param {Scene} scene The scene
- * @ionsdk
  * @param {Cartesian2} mousePosition The mouse position
  * @param {Cartographic} result The result position
  * @returns {Cartographic} The position in world space

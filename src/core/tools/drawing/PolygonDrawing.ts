@@ -3,7 +3,6 @@
 import {
   Cartesian2,
   Cartesian3,
-  Cartographic,
   createGuid,
   defined,
   destroyObject,
@@ -21,8 +20,7 @@ import { PointOptions, PolylineOptions, PolygonOptions } from './DrawingSettings
 
 const clickDistanceScratch = new Cartesian2();
 const cart3Scratch = new Cartesian3();
-const cartoScratch1 = new Cartographic();
-
+// const cart3Scratch1 = new Cartesian3();
 const mouseDelta = 10;
 const ESC_KEY = 'Escape';
 
@@ -363,11 +361,14 @@ class PolygonDrawing extends MapTool {
       return;
     }
 
-    const position = this._getPositionFromMouseEvent(event);
+    const position = this.getWorldPosition(event.pos, cart3Scratch);
+
+    if (!defined(position) || !position) {
+      return;
+    }
 
     if (!this._isSnappedToFirstVertex) {
-      const vertex = this._polygon.addPoint(Cartesian3.clone(position!, new Cartesian3()));
-      console.info(vertex, position);
+      const vertex = this._polygon.addPoint(Cartesian3.clone(position, new Cartesian3()));
       this._evtVertexCreatedWhileDrawing.raiseEvent([vertex], [this._polygon], [this]);
       if (this._mode !== DrawingMode.Drawing) this._mode = DrawingMode.Drawing;
     } else {
@@ -386,7 +387,7 @@ class PolygonDrawing extends MapTool {
    * @returns
    */
   canvasMoveEvent(event: MouseEvent) {
-    const nextPos = this._getPositionFromMouseEvent(event);
+    const nextPos = this.getWorldPosition(event.pos, cart3Scratch);
     if (!defined(nextPos) || !nextPos) {
       return;
     }
@@ -423,7 +424,7 @@ class PolygonDrawing extends MapTool {
    * @returns
    */
   _handleCanvasMoveEventForDrawing(event: MouseEvent) {
-    const nextPos = this._getPositionFromMouseEvent(event);
+    const nextPos = this.getWorldPosition(event.pos, cart3Scratch);
 
     if (!defined(nextPos) || !nextPos) {
       return;
@@ -465,7 +466,7 @@ class PolygonDrawing extends MapTool {
    */
   _handleCanvasMoveEventForAfterDraw(event: MouseEvent) {
     if (this._focusedPointPrimitive) {
-      const position = this._getPositionFromMouseEvent(event);
+      const position = this.getWorldPosition(event.pos, cart3Scratch);
 
       if (!defined(position)) return;
 
@@ -473,40 +474,8 @@ class PolygonDrawing extends MapTool {
 
       if (this._focusedPointPrimitive.isMainVertex) {
         polygon.updateMainVertex(this._focusedPointPrimitive, position!);
-        console.info('update main vertex');
       }
     }
-  }
-
-  /**
-   * Get Cartesian from Mouse position
-   * @param { MouseEvent } event
-   * @returns
-   */
-  _getPositionFromMouseEvent(event: MouseEvent) {
-    const cartographic = this.getWorldCartographic(event.pos, cartoScratch1);
-
-    if (!defined(cartographic) || !cartographic) {
-      return undefined;
-    }
-
-    const position = this._getPositionFromCartographic(cartographic);
-    return position;
-  }
-
-  /**
-   * Get Cartesian position from Cartographic
-   * @param {Cartographic} cartographic
-   * @returns
-   */
-  _getPositionFromCartographic(cartographic: Cartographic) {
-    const heightTerrain = this.getHeight(cartographic);
-    const position = Cartesian3.fromRadians(
-      cartographic.longitude,
-      cartographic.latitude,
-      heightTerrain
-    );
-    return position;
   }
 
   /**
@@ -514,7 +483,7 @@ class PolygonDrawing extends MapTool {
    * @param {MouseEvent} event
    */
   _handleCanvasMoveEventForEdit(event: MouseEvent) {
-    const position = this._getPositionFromMouseEvent(event);
+    const position = this.getWorldPosition(event.pos, cart3Scratch);
     const polyline = this._polygon.polyline;
     if (!position || !polyline) {
       return;

@@ -65,7 +65,6 @@ export class PolygonPrimitive {
     this._primitive = undefined;
     this._update = true;
     this._allowPicking = defaultValue(options.allowPicking, false);
-    // this._clamped = defaultValue(options.clamped, true);
     this._clamped = defaultValue(options.clamped, true);
   }
 

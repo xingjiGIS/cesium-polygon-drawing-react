@@ -57,3 +57,11 @@
 ### 0.2.7 - 2022-11-29
 
 - fix flickering polygon issue
+
+### 0.2.8 - 2022-12-02
+
+- add imagery layer and terrain
+
+### 0.2.9 - 2022-12-6
+
+- fix imagery layer and terrain
