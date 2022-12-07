@@ -156,7 +156,8 @@ export class Polygon {
         combine(
           {
             show: options.show,
-            positions: options.positions
+            positions: options.positions,
+            scene: scene
           },
           polylineOptions
         )
@@ -489,6 +490,13 @@ export class Polygon {
     if (mainVertexPointPrimitive) {
       mainVertexPointPrimitive.position = position;
     }
+  }
+
+  updateMainVertecies() {
+    _updateHeightOfPointPrimitives(
+      this._scene,
+      this._mainVertexPointPrimitives as PointPrimitive[]
+    );
   }
 
   findMainVertex(vertexIndex: number) {

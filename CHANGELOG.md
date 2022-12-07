@@ -42,3 +42,26 @@
 
 - Finished all functionalities
 
+### 0.2.6 - 2022-11-26
+
+#### Fixed issues on MR [1](https://gitlab.com/aarav-unmanned/platform-dev/gis-development/-/merge_requests/1)
+
+- Use the arrow function (https://gitlab.com/aarav-unmanned/platform-dev/gis-development/-/merge_requests/1#note_1178775358)
+- Remove window object, use React Context (https://gitlab.com/aarav-unmanned/platform-dev/gis-development/-/merge_requests/1#note_1178819202)
+- Not run in a non-dev environment (https://gitlab.com/aarav-unmanned/platform-dev/gis-development/-/merge_requests/1#note_1185705309)
+
+#### Merge AaravMapViewer and AaravViewer (https://gitlab.com/aarav-unmanned/platform-dev/gis-development/-/merge_requests/1#note_1185718048)
+
+#### Add an example for "Why do we need to raise this event here?" (https://gitlab.com/aarav-unmanned/platform-dev/gis-development/-/merge_requests/1#note_1185728653)
+
+### 0.2.7 - 2022-11-29
+
+- fix flickering polygon issue
+
+### 0.2.8 - 2022-12-02
+
+- add imagery layer and terrain
+
+### 0.2.9 - 2022-12-6
+
+- fix imagery layer and terrain

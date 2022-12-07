@@ -35,6 +35,13 @@ const enum SnapMode {
 }
 
 /**
+ * Check if number of vertex is greater than minimum number of polygon vertices
+ * @param {number} n
+ * @returns {boolean}
+ */
+const isPolygon = (n: number) => n >= MIN_POLYGON_VERTEX_NUM;
+
+/**
  * Options for polygon drawing tool
  */
 export interface PolygonDrawingConstructorOptions extends MapToolConstructorOptions {
@@ -85,7 +92,7 @@ class PolygonDrawing extends MapTool {
   private readonly _markerPointCollection: PointPrimitiveCollection;
 
   // Is snapped to the first vertex
-  private _isSnappedToFristVertex: boolean;
+  private _isSnappedToFirstVertex: boolean;
   // Is dragging
   private _isDrag: boolean;
   // -1: no snapped, 0: snapped on vertex, 1: snapped on edge
@@ -120,12 +127,24 @@ class PolygonDrawing extends MapTool {
     this._markerPointPrimitive = this._markerPointCollection.add(this.options.markerOptions);
 
     this._isDrag = false;
-    this._isSnappedToFristVertex = false;
+    this._isSnappedToFirstVertex = false;
     this._snapMode = SnapMode.NONE;
+
+    scene.camera.moveEnd.addEventListener(() => {
+      if (this.polygons) {
+        for (let i = 0; i < this.polygons.length; i++) {
+          this.polygons[i].updateMainVertecies();
+        }
+      }
+    });
   }
 
   /**
    * Whenever camera changed, update polygon primitives
+   * Use this function to calculate polygons culling volume in multi-polygon drawing mode (not now)
+   * When drawing a lot of polygons and zooming camera, very small polygons(i.e. with very small culling volume)
+   * should be invisible so that the render efficiency would be high.
+   * Reference for Culling Volume : https://cesium.com/learn/cesiumjs/ref-doc/CullingVolume.html
    */
   updatePolygons() {
     const scene = this._scene;
@@ -238,28 +257,18 @@ class PolygonDrawing extends MapTool {
       this._evtPolygonCreated.raiseEvent([this._polygon], [this]);
       this._mode = DrawingMode.EditDraw;
 
-      // if number of vertex < 3, remove and reset polygon
-      if (this._polygon.positions.length < MIN_POLYGON_VERTEX_NUM) {
+      if (!isPolygon(this._polygon.positions.length)) {
         this.deletePolygon();
         return;
       }
       // polygon created
       this._polygons.push(this._polygon);
-
-      const camera = this._scene.camera;
-
-      const cullingVolume = camera.frustum.computeCullingVolume(
-        camera.position,
-        camera.direction,
-        camera.up
-      );
-      this._polygon.update(cullingVolume);
     } else if (event.button === MouseButton.RightButton && this._mode === DrawingMode.EditDraw) {
       if (this._snapVertex) {
         // Right-clicking on a vertex
         this.deleteVertex(this._snapVertex);
         // if number of vertex < 3, remove and reset polygon
-        if (this._polygon.positions.length < MIN_POLYGON_VERTEX_NUM) {
+        if (!isPolygon(this._polygon.positions.length)) {
           this.deletePolygon();
           return;
         }
@@ -366,7 +375,7 @@ class PolygonDrawing extends MapTool {
       return;
     }
 
-    if (!this._isSnappedToFristVertex) {
+    if (!this._isSnappedToFirstVertex) {
       const vertex = this._polygon.addPoint(Cartesian3.clone(position, new Cartesian3()));
       this._evtVertexCreatedWhileDrawing.raiseEvent([vertex], [this._polygon], [this]);
       if (this._mode !== DrawingMode.Drawing) this._mode = DrawingMode.Drawing;
@@ -431,7 +440,7 @@ class PolygonDrawing extends MapTool {
 
     // To snap to first vertex while drawing;
     const polyline = this._polygon.polyline;
-    if (polyline.positions.length > MIN_POLYGON_VERTEX_NUM) {
+    if (isPolygon(polyline.positions.length)) {
       const distance = Cartesian3.distance(polyline.positions[0], nextPos);
       const scene = this._scene;
       const drawingBufferWidth = scene.drawingBufferWidth;
@@ -446,11 +455,11 @@ class PolygonDrawing extends MapTool {
       const pixelDistFromVertex = distance / metersPerPixel;
 
       if (pixelDistFromVertex < SNAP_PIXELSIZE_TO_VERTEX) {
-        this._isSnappedToFristVertex = true;
+        this._isSnappedToFirstVertex = true;
         this._markerPointPrimitive.position = polyline.positions[0];
         Cartesian3.clone(polyline.positions[0], nextPos);
       } else {
-        this._isSnappedToFristVertex = false;
+        this._isSnappedToFirstVertex = false;
       }
     }
 

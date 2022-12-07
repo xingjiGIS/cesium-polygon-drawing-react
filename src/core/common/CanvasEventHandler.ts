@@ -156,6 +156,10 @@ class CanvasEventHandler {
   }
 
   /**
+   * Mouse move event on Cesium Viewer
+   * It will call drawing tool's canvasMoveEvent function which will be implemented detailed functionality.
+   * This event will be connected by ScreenSpaceEventHandler.setInputAction function in this constructor.
+   * Reference : https://cesium.com/lenarn/cesiumjs/ref-doc/ScreenSpaceEventHandler.html
    * @param {Object} movement
    * @param {Cartesian2} movement.startPosition
    * @param {Cartesian2} movement.endPosition
@@ -173,6 +177,14 @@ class CanvasEventHandler {
     this._viewer.mapTool.canvasMoveEvent(event);
   }
 
+  /**
+   * Mouse move event with holding CTRL key on Cesium Viewer
+   * It will call drawing tool's canvasMoveEvent function
+   * This event will be connected by ScreenSpaceEventHandler.setInputAction function in this constructor.
+   * Reference : https://cesium.com/lenarn/cesiumjs/ref-doc/ScreenSpaceEventHandler.html
+   * @param {ScreenSpaceEventHandler.MotionEvent} movement
+   * @returns
+   */
   _mouseMoveCtrl(movement: ScreenSpaceEventHandler.MotionEvent) {
     // @ts-ignore
     if (!this._viewer.mapTool) {
@@ -188,6 +200,14 @@ class CanvasEventHandler {
     this._viewer.mapTool.canvasMoveEvent(event);
   }
 
+  /**
+   * Mouse move event with holding SHIFT key on Cesium Viewer
+   * It will call drawing tool's canvasMoveEvent function
+   * This event will be connected by ScreenSpaceEventHandler.setInputAction function in this constructor.
+   * Reference : https://cesium.com/lenarn/cesiumjs/ref-doc/ScreenSpaceEventHandler.html
+   * @param {ScreenSpaceEventHandler.MotionEvent} movement
+   * @returns
+   */
   _mouseMoveShift(movement: ScreenSpaceEventHandler.MotionEvent) {
     // @ts-ignore
     if (!this._viewer.mapTool) {
@@ -203,6 +223,11 @@ class CanvasEventHandler {
   }
 
   /**
+   * MLB Double click event on Cesium Viewer
+   * This event will be connected by ScreenSpaceEventHandler.setInputAction function in this constructor.
+   * It will call drawing tool's canvasDoubleClickEvent function which will be implemented detailed functionality.
+   *
+   * Reference : https://cesium.com/lenarn/cesiumjs/ref-doc/ScreenSpaceEventHandler.html
    * @param   {Object} movement
    * @param   {Cartesian2} movement.position
    * @private
@@ -232,6 +257,10 @@ class CanvasEventHandler {
   }
 
   /**
+   * MLB press down event on Cesium Viewer
+   * This event will be connected by ScreenSpaceEventHandler.setInputAction function in this constructor.
+   * It will call drawing tool's canvasPressEvent function which will be implemented detailed functionality.
+   * Reference : https://cesium.com/lenarn/cesiumjs/ref-doc/ScreenSpaceEventHandler.html
    * @param   {Object} movement
    * @param   {Cartesian2} movement.position
    * @private
@@ -247,6 +276,10 @@ class CanvasEventHandler {
   }
 
   /**
+   * MRB press down event on Cesium Viewer
+   * This event will be connected by ScreenSpaceEventHandler.setInputAction function in this constructor.
+   * It will call drawing tool's canvasPressEvent function which will be implemented detailed functionality.
+   * Reference : https://cesium.com/lenarn/cesiumjs/ref-doc/ScreenSpaceEventHandler.html
    * @param   {Object} movement
    * @param   {Cartesian2} movement.position
    * @private
@@ -270,6 +303,10 @@ class CanvasEventHandler {
   }
 
   /**
+   * MLB release event on Cesium Viewer
+   * This event will be connected by ScreenSpaceEventHandler.setInputAction function in this constructor.
+   * It will call drawing tool's canvasReleaseEvent function which will be implemented detailed functionality.
+   * Reference : https://cesium.com/lenarn/cesiumjs/ref-doc/ScreenSpaceEventHandler.html
    * @param   {Object} movement
    * @param   {Cartesian2} movement.position
    * @private
@@ -285,6 +322,10 @@ class CanvasEventHandler {
   }
 
   /**
+   * MLB down event with holding CTRL key on Cesium Viewer
+   * This event will be connected by ScreenSpaceEventHandler.setInputAction function in this constructor.
+   * It will call drawing tool's canvasReleaseEvent function which will be implemented detailed functionality.
+   * Reference : https://cesium.com/lenarn/cesiumjs/ref-doc/ScreenSpaceEventHandler.html
    * @param   {Object} movement
    * @param   {Cartesian2} movement.position
    * @private
@@ -300,6 +341,10 @@ class CanvasEventHandler {
   }
 
   /**
+   * MLB release event with holding SHIFT key on Cesium Viewer
+   * This event will be connected by ScreenSpaceEventHandler.setInputAction function in this constructor.
+   * It will call drawing tool's canvasReleaseEvent function which will be implemented detailed functionality.
+   * Reference : https://cesium.com/lenarn/cesiumjs/ref-doc/ScreenSpaceEventHandler.html
    * @param   {Object} movement
    * @param   {Cartesian2} movement.position
    * @private
@@ -315,6 +360,10 @@ class CanvasEventHandler {
   }
 
   /**
+   * MRB release event on Cesium Viewer
+   * This event will be connected by ScreenSpaceEventHandler.setInputAction function in this constructor.
+   * It will call drawing tool's canvasReleaseEvent function which will be implemented detailed functionality.
+   * Reference : https://cesium.com/lenarn/cesiumjs/ref-doc/ScreenSpaceEventHandler.html
    * @param   {Object} movement
    * @param   {Cartesian2} movement.position
    * @private
@@ -330,6 +379,10 @@ class CanvasEventHandler {
   }
 
   /**
+   * MRB release event with holding CTRL key on Cesium Viewer
+   * This event will be connected by ScreenSpaceEventHandler.setInputAction function in this constructor.
+   * It will call drawing tool's canvasReleaseEvent function which will be implemented detailed functionality.
+   * Reference : https://cesium.com/lenarn/cesiumjs/ref-doc/ScreenSpaceEventHandler.html
    * @param   {Object} movement
    * @param   {Cartesian2} movement.position
    * @private
@@ -345,6 +398,10 @@ class CanvasEventHandler {
   }
 
   /**
+   * MRB release event with holding SHIFT key on Cesium Viewer
+   * This event will be connected by ScreenSpaceEventHandler.setInputAction function in this constructor.
+   * It will call drawing tool's canvasReleaseEvent function which will be implemented detailed functionality.
+   * Reference : https://cesium.com/lenarn/cesiumjs/ref-doc/ScreenSpaceEventHandler.html
    * @param   {Object} movement
    * @param   {Cartesian2} movement.position
    * @private
@@ -374,6 +431,10 @@ class CanvasEventHandler {
   }
 
   /**
+   * MLB click event on Cesium Viewer
+   * This event will be connected by ScreenSpaceEventHandler.setInputAction function in this constructor.
+   * It will call drawing tool's canvasClickEvent function which will be implemented detailed functionality.
+   * Reference : https://cesium.com/lenarn/cesiumjs/ref-doc/ScreenSpaceEventHandler.html
    * @param   {Object} movement
    * @param   {Cartesian2} movement.position
    * @private
@@ -389,6 +450,10 @@ class CanvasEventHandler {
   }
 
   /**
+   * MLB click event with holding SHIFT key on Cesium Viewer
+   * This event will be connected by ScreenSpaceEventHandler.setInputAction function in this constructor.
+   * It will call drawing tool's canvasClickEvent function which will be implemented detailed functionality.
+   * Reference : https://cesium.com/lenarn/cesiumjs/ref-doc/ScreenSpaceEventHandler.html
    * @param   {Object} movement
    * @param   {Cartesian2} movement.position
    * @private
@@ -418,7 +483,12 @@ class CanvasEventHandler {
   }
 
   /**
-   * @param {Number} wheel
+   * Mouse wheel event on Cesium Viewer
+   * This event will be connected by ScreenSpaceEventHandler.setInputAction function in this constructor.
+   * It will call drawing tool's wheelEvent function which will be implemented detailed functionality.
+   * Reference : https://cesium.com/lenarn/cesiumjs/ref-doc/ScreenSpaceEventHandler.html
+   * @param   {Object} movement
+   * @param   {Cartesian2} movement.position
    * @private
    */
   _wheel(wheel: Cartesian2) {
@@ -452,7 +522,12 @@ class CanvasEventHandler {
   }
 
   /**
-   * @param {KeyboardEvent} event
+   * Key press event on Cesium Viewer
+   * This event will be connected by ScreenSpaceEventHandler.setInputAction function in this constructor.
+   * It will call drawing tool's keyPressEvent function which will be implemented detailed functionality.
+   * Reference : https://cesium.com/lenarn/cesiumjs/ref-doc/ScreenSpaceEventHandler.html
+   * @param   {Object} movement
+   * @param   {Cartesian2} movement.position
    * @private
    */
   _handleKeyDown(event: any) {
@@ -470,7 +545,12 @@ class CanvasEventHandler {
   }
 
   /**
-   * @param {KeyboardEvent} event
+   * Key release event on Cesium Viewer
+   * This event will be connected by ScreenSpaceEventHandler.setInputAction function in this constructor.
+   * It will call drawing tool's keyReleaseEvent function which will be implemented detailed functionality.
+   * Reference : https://cesium.com/lenarn/cesiumjs/ref-doc/ScreenSpaceEventHandler.html
+   * @param   {Object} movement
+   * @param   {Cartesian2} movement.position
    * @private
    */
   _handleKeyUp(event: any) {

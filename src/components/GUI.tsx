@@ -8,10 +8,11 @@ import Toolbar from './toolbar';
 import AaravViewerWrapper from './AaravViewerWrapper';
 
 const GUI = () => {
-  const { aaravMapViewer, aaravMainViewer } = React.useContext(AaravContext) as AaravContextType;
+  const { aaravViewer } = React.useContext(AaravContext) as AaravContextType;
+  const viewer = aaravViewer.cesiumViewer;
 
-  if (!aaravMapViewer) {
-    logger.error('failed to get aaravMapViewer in GUI');
+  if (!viewer) {
+    logger.error('failed to get viewer in GUI');
     return null;
   }
 
@@ -30,7 +31,7 @@ const GUI = () => {
         toolbarContainerOption={toolbarContainerOption}
         polygonDrawingToolOption={polygonDrawingToolOption}
       />
-      <AaravViewerWrapper aaravMainViewer={aaravMainViewer} />
+      <AaravViewerWrapper aaravViewer={aaravViewer} />
     </ReactFlowProvider>
   );
 };

@@ -15,21 +15,19 @@ export default function render(aarav: Aarav) {
 
   setupReactAppOverlayErrorHandler();
 
-  if (aarav.isDevelopmentMode) {
-    const renderError = (error: Error) => {
-      logger.error(error);
-    };
+  const renderError = (error: Error) => {
+    logger.error(error);
+  };
 
-    const renderApp = doRender;
+  const renderApp = doRender;
 
-    doRender = () => {
-      try {
-        renderApp();
-      } catch (error: any) {
-        renderError(error);
-      }
-    };
-  }
+  doRender = () => {
+    try {
+      renderApp();
+    } catch (error: any) {
+      renderError(error);
+    }
+  };
 
   doRender();
 }

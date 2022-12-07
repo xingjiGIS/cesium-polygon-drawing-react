@@ -1,23 +1,41 @@
-import { defined, DeveloperError, Event } from 'cesium';
-import { AaravMapViewer } from './AaravMapViewer';
+import {
+  Cartesian3,
+  CesiumTerrainProvider,
+  defined,
+  DeveloperError,
+  Event,
+  Rectangle,
+  UrlTemplateImageryProvider,
+  Viewer
+} from 'cesium';
 import { Aarav } from './Aarav';
+import { DrawingToolsMixin } from './tools/drawing';
+
+const rasterUrl =
+  'https://plt-shared-dev.aereo.co.in:8001/ortho/{z}/{x}/{y}.png?key=rb-iterations-dev/orthomosaic/d4ca6a08-79c0-4d45-872e-9979cbe24bed_cog.tif';
+const terrainURL =
+  'https://plt-shared-dev.aereo.co.in:8002/?folder_name=d4ca6a08-79c0-4d45-872e-9979cbe24bed_tt&key=rb-iterations-dev/terrain_tiles/d4ca6a08-79c0-4d45-872e-9979cbe24bed_tt';
+const viewBounds = [87.01091189016857, 23.802298682242647, 87.02987852815343, 23.817440580860772];
+const minZoom = 14;
+const maxZoom = 19;
+
 /**
  * Create a Cesium viewer for aarav
  * And attach it to a HTML element
  *
- * Cesium Events evtMapViewerCreated, evtMapViewerDestroyed will be assigned later.
+ * Cesium Events evtAaravViewerCreated, evtAaravViewerDestroyed will be assigned later.
  *
  */
 class AaravViewer {
+  private _cesiumViewer: Viewer | undefined;
   readonly aarav: Aarav;
   mapContainer: HTMLElement | undefined;
-  aaravMapViewer: AaravMapViewer | undefined;
-  destroyingAaravMapViewer: boolean = false;
+  destroyingCesiumViewer: boolean = false;
 
-  // Cesium Event to process something when create mapviewer
-  readonly evtMapViewerCreated = new Event();
-  // Cesium Event to process something when destroy mapviewer
-  readonly evtMapViewerDestroyed = new Event();
+  // Cesium Event to process something when create aaravViewer
+  readonly evtAaravViewerCreated = new Event();
+  // Cesium Event to process something when destroy aaravViewer
+  readonly evtAaravViewerDestroyed = new Event();
 
   constructor(aarav: Aarav) {
     this.aarav = aarav;
@@ -27,10 +45,10 @@ class AaravViewer {
     return this.mapContainer !== undefined;
   }
 
-  createAaravMapViewer() {
+  createCesiumViewer() {
     // preConditionStart
-    if (defined(this.aaravMapViewer)) {
-      throw new DeveloperError('aaravMapViewer already created!');
+    if (defined(this._cesiumViewer)) {
+      throw new DeveloperError('cesiumViewer already created!');
     }
     // preConditionEnd
 
@@ -39,27 +57,58 @@ class AaravViewer {
     const cesiumContainer = document.createElement('div');
 
     root!.append(cesiumContainer);
-    const aaravMapViewer = new AaravMapViewer(cesiumContainer);
 
-    this.aaravMapViewer = aaravMapViewer;
+    if (!defined(cesiumContainer)) {
+      throw new DeveloperError('container is required.');
+    }
+
+    const terrainProvider = new CesiumTerrainProvider({
+      url: terrainURL,
+      requestVertexNormals: true
+    });
+
+    const viewer: Viewer = new Viewer(cesiumContainer, {
+      terrainProvider: terrainProvider
+    });
+
+    // @ts-ignore
+    viewer._element.style = 'width: 100vw;';
+
+    this._cesiumViewer = viewer;
+    this._initMixins();
+
+    this._setupLayers();
+    viewer.camera.flyTo({
+      destination: Cartesian3.fromDegrees(87.0180062252, 23.8108504077, 5000.0)
+    });
 
     // Trigger event
-    this.evtMapViewerCreated.raiseEvent();
+    this.evtAaravViewerCreated.raiseEvent();
 
-    return aaravMapViewer;
+    return this._cesiumViewer;
+  }
+
+  _initMixins() {
+    const viewer = this._cesiumViewer;
+
+    viewer!.extend(DrawingToolsMixin);
+  }
+
+  get cesiumViewer() {
+    return this._cesiumViewer;
   }
 
   attach(mapContainer: HTMLElement) {
     // preConditionStart
-    if (!defined(this.aaravMapViewer)) {
-      throw new DeveloperError('aaravMapViewer required!');
+    if (!defined(this._cesiumViewer)) {
+      throw new DeveloperError('cesiumViewer required!');
     }
     // preConditionEnd
 
     this.mapContainer = mapContainer;
 
     // move from root html element to this.mapContainer html element
-    this.mapContainer.append(this.aaravMapViewer!.viewer.container);
+    this.mapContainer.append(this._cesiumViewer!.container);
   }
 
   // remove mapContainer
@@ -68,26 +117,42 @@ class AaravViewer {
       return;
     }
 
-    this.destroyMapViewer();
+    this.destroyCesiumViewer();
 
     this.mapContainer = undefined;
   }
 
-  // Destroy cesium viewer
-  private destroyMapViewer() {
-    if (this.destroyingAaravMapViewer) {
+  _setupLayers() {
+    if (!this._cesiumViewer) {
       return;
     }
 
-    this.destroyingAaravMapViewer = true;
+    const cesiumImageryLayer = new UrlTemplateImageryProvider({
+      url: rasterUrl,
+      rectangle: Rectangle.fromDegrees(viewBounds[0], viewBounds[1], viewBounds[2], viewBounds[3]),
+      minimumLevel: minZoom,
+      maximumLevel: maxZoom
+    });
+    const layers = this._cesiumViewer.scene.imageryLayers;
+    const imageryLayer = layers.addImageryProvider(cesiumImageryLayer);
+    imageryLayer.alpha = 1.0;
+  }
 
-    const cesiumViewer = this.aaravMapViewer?.viewer;
+  // Destroy cesium viewer
+  private destroyCesiumViewer() {
+    if (this.destroyingCesiumViewer) {
+      return;
+    }
+
+    this.destroyingCesiumViewer = true;
+
+    const cesiumViewer = this._cesiumViewer;
 
     cesiumViewer!.destroy();
-    this.evtMapViewerDestroyed.raiseEvent();
+    this.evtAaravViewerDestroyed.raiseEvent();
 
-    this.aaravMapViewer = undefined;
-    this.destroyingAaravMapViewer = false;
+    this._cesiumViewer = undefined;
+    this.destroyingCesiumViewer = false;
   }
 }
 

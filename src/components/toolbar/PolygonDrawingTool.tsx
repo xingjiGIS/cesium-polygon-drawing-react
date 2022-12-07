@@ -1,16 +1,31 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import logger from 'loglevel';
 import { PolygonDrawingToolProps } from './toolbar.styles';
 import AaravContext, { AaravContextType } from '../../AaravContext';
 
 const PolygonDrawingTool = ({ id, enabled }: PolygonDrawingToolProps) => {
-  const { aaravMapViewer } = React.useContext(AaravContext) as AaravContextType;
-  const viewer = aaravMapViewer!.viewer;
+  const { aaravViewer } = React.useContext(AaravContext) as AaravContextType;
+  const viewer = aaravViewer.cesiumViewer;
+  const [aaravViewerCreated, setAaravViewerCreated] = useState(viewer !== undefined);
 
+  useEffect(() => {
+    // Event
+    const onAaravViewerCreated = () => {
+      if (!aaravViewerCreated) {
+        setAaravViewerCreated(true);
+      }
+    };
+
+    aaravViewer.evtAaravViewerCreated.addEventListener(onAaravViewerCreated);
+
+    return function () {
+      aaravViewer.evtAaravViewerCreated.removeEventListener(onAaravViewerCreated);
+    };
+  }, []);
   // Enable drawing tool
   const onClick = () => {
     if (!viewer) {
-      logger.error('AaravMapViewer is being loaded');
+      logger.error('Viewer is being loaded');
       return;
     }
     // @ts-ignore
@@ -46,9 +61,13 @@ const PolygonDrawingTool = ({ id, enabled }: PolygonDrawingToolProps) => {
   };
 
   return (
-    <button type="button" id={id} disabled={!enabled} onClick={() => onClick()}>
-      Draw
-    </button>
+    <div>
+      {aaravViewerCreated && (
+        <button type="button" id={id} disabled={!enabled} onClick={() => onClick()}>
+          Draw
+        </button>
+      )}
+    </div>
   );
 };
 
