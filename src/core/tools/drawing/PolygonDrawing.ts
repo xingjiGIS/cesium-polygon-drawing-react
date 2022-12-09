@@ -3,6 +3,7 @@
 import {
   Cartesian2,
   Cartesian3,
+  Cartographic,
   createGuid,
   defined,
   destroyObject,
@@ -20,6 +21,7 @@ import { PointOptions, PolylineOptions, PolygonOptions } from './DrawingSettings
 
 const clickDistanceScratch = new Cartesian2();
 const cart3Scratch = new Cartesian3();
+const cartoScratch = new Cartographic();
 // const cart3Scratch1 = new Cartesian3();
 const mouseDelta = 10;
 const ESC_KEY = 'Escape';
@@ -441,8 +443,20 @@ class PolygonDrawing extends MapTool {
     // To snap to first vertex while drawing;
     const polyline = this._polygon.polyline;
     if (isPolygon(polyline.positions.length)) {
-      const distance = Cartesian3.distance(polyline.positions[0], nextPos);
       const scene = this._scene;
+      const ellipsoid = scene.globe.ellipsoid;
+      ellipsoid.cartesianToCartographic(polyline.positions[0], cartoScratch);
+
+      const firstVertexPos = new Cartesian3();
+      Cartesian3.fromRadians(
+        cartoScratch.longitude,
+        cartoScratch.latitude,
+        scene.globe.getHeight(cartoScratch),
+        ellipsoid,
+        firstVertexPos
+      );
+      const distance = Cartesian3.distance(firstVertexPos, nextPos);
+
       const drawingBufferWidth = scene.drawingBufferWidth;
       const drawingBufferHeight = scene.drawingBufferHeight;
 
@@ -456,8 +470,8 @@ class PolygonDrawing extends MapTool {
 
       if (pixelDistFromVertex < SNAP_PIXELSIZE_TO_VERTEX) {
         this._isSnappedToFirstVertex = true;
-        this._markerPointPrimitive.position = polyline.positions[0];
-        Cartesian3.clone(polyline.positions[0], nextPos);
+        this._markerPointPrimitive.position = firstVertexPos;
+        Cartesian3.clone(firstVertexPos, nextPos);
       } else {
         this._isSnappedToFirstVertex = false;
       }
