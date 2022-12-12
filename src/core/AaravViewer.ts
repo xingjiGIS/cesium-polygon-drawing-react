@@ -10,7 +10,7 @@ import {
 } from 'cesium';
 import MVTImageryProvider, { StyleSpecification } from 'mvt-imagery-provider';
 import { Aarav } from './Aarav';
-import { DrawingToolsMixin } from './tools/drawing';
+import DrawingToolsMixin from './tools/drawing';
 
 const rasterUrl =
   'https://plt-shared-dev.aereo.co.in:8001/ortho/{z}/{x}/{y}.png?key=rb-iterations-dev/orthomosaic/d4ca6a08-79c0-4d45-872e-9979cbe24bed_cog.tif';

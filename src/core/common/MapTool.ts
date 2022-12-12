@@ -178,6 +178,7 @@ class MapTool {
   }
 
   /**
+   * convert mouse position to world position
    * @param {Cartesian2} mousePosition
    * @param {Cartesian3} result
    * @return {Cartesian3|undefined}
@@ -189,6 +190,12 @@ class MapTool {
     return getWorldPosition(scene, mousePosition, result);
   }
 
+  /**
+   * Get the nearest edge, vertex information from position in polgon constructed by positions
+   * @param {Cartesian3[]} positions
+   * @param {Cartesian3} pos
+   * @returns
+   */
   getNearestEdgeInfo(positions: Cartesian3[], pos: Cartesian3) {
     const viewer = this._viewer;
     const { scene } = viewer;

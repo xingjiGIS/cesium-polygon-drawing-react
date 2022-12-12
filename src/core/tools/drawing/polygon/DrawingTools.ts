@@ -9,8 +9,8 @@ import {
   Viewer
 } from 'cesium';
 
-import { getMapToolCursorStyle, MapTools } from '../../common';
-import DrawingSettings from './DrawingSettings';
+import { getMapToolCursorStyle, MapTools } from '../../../common';
+import DrawingSettings from '../../common/DrawingSettings';
 import { Polygon } from './Polygon';
 import { PolygonDrawing } from './PolygonDrawing';
 
@@ -54,16 +54,11 @@ class DrawingTools extends MapTools {
       markerOptions: DrawingSettings.getMarkerPointOptions()
     });
 
-    // const scene = this._viewer.scene;
-
-    // scene.camera.moveEnd.addEventListener(() => {
-    //   this._polygonDrawing.updatePolygons();
-    // });
-
     this._polygonDeleted = new Event();
   }
 
-  activatePolygonDrawing() {
+  activateDrawing() {
+    this._polygonDrawing.showMarker();
     // @ts-ignore
     this._viewer.setMapTool(this._polygonDrawing);
   }

@@ -5,9 +5,15 @@ export interface PolygonDrawingToolProps {
   enabled: boolean;
 }
 
+export interface LineDrawingToolProps {
+  id: string;
+  enabled: boolean;
+}
+
 export interface ToolbarProps {
   toolbarContainerOption: ToolbarContainerProps;
   polygonDrawingToolOption: PolygonDrawingToolProps | undefined;
+  lineDrawingToolOption: LineDrawingToolProps | undefined;
 }
 
 export interface ToolbarContainerProps {

@@ -69,3 +69,7 @@
 ### 0.3.0 - 2022-12-7
 
 - fix drawing tool on terrain
+
+### 0.3.2 - 2022-12-12
+
+- create line drawing tool in cesium

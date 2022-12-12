@@ -14,10 +14,10 @@ import {
   PrimitiveCollection,
   Scene
 } from 'cesium';
-import { MapTool, MapToolConstructorOptions, MouseButton, MouseEvent } from '../../common';
-import DrawingMode from './DrawingMode';
+import { MapTool, MapToolConstructorOptions, MouseButton, MouseEvent } from '../../../common';
+import DrawingMode from '../../common/DrawingMode';
 import { Polygon, Vertex } from './Polygon';
-import { PointOptions, PolylineOptions, PolygonOptions } from './DrawingSettings';
+import { PointOptions, PolylineOptions, PolygonOptions } from '../../common/DrawingSettings';
 
 const clickDistanceScratch = new Cartesian2();
 const cart3Scratch = new Cartesian3();
@@ -135,7 +135,7 @@ class PolygonDrawing extends MapTool {
     scene.camera.moveEnd.addEventListener(() => {
       if (this.polygons) {
         for (let i = 0; i < this.polygons.length; i++) {
-          this.polygons[i].updateMainVertecies();
+          this.polygons[i].updateHeightOfPoint();
         }
       }
     });
@@ -181,6 +181,7 @@ class PolygonDrawing extends MapTool {
   deactivate() {
     super.deactivate();
 
+    this.hideMarker();
     // this._reset();
   }
 
@@ -231,6 +232,20 @@ class PolygonDrawing extends MapTool {
       return polygons[0];
     }
     return null;
+  }
+
+  /**
+   * Show marker point
+   */
+  showMarker() {
+    this._markerPointPrimitive.show = true;
+  }
+
+  /**
+   * Hide marker point
+   */
+  hideMarker() {
+    this._markerPointPrimitive.show = false;
   }
 
   /**
@@ -403,7 +418,7 @@ class PolygonDrawing extends MapTool {
     }
 
     this._markerPointPrimitive.position = Cartesian3.clone(nextPos, cart3Scratch);
-    this._markerPointPrimitive.show = true;
+    this.showMarker();
 
     if (this._mode === DrawingMode.Drawing) {
       this._handleCanvasMoveEventForDrawing(event);

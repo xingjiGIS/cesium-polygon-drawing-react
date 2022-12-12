@@ -25,11 +25,17 @@ const GUI = () => {
     id: 'aarav-tool-polygon-drawing'
   };
 
+  const lineDrawingToolOption = {
+    enabled: true,
+    id: 'aarav-tool-line-drawing'
+  };
+
   return (
     <ReactFlowProvider>
       <Toolbar
         toolbarContainerOption={toolbarContainerOption}
         polygonDrawingToolOption={polygonDrawingToolOption}
+        lineDrawingToolOption={lineDrawingToolOption}
       />
       <AaravViewerWrapper aaravViewer={aaravViewer} />
     </ReactFlowProvider>
